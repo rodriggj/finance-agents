@@ -1,6 +1,8 @@
 # Purpose: 
 > An AI-powered fundamental stock analysis pipeline built with the OpenAI Agents SDK. Five specialist agents (financial data, valuation, news/sentiment, risk, report writer) collaborate under an Orchestrator to produce a professional investment brief for any publicly traded stock.
 
+--------
+
 # Fundamental Analysis
 > Fundamental analysis consists of determing a company's intrinsic value, meaning what the business is actually worth, independent of what the stock price. This contrasts to technical analysis which focuses on predicting the future price movements by analyzing historical price charst and trading volume. 
 
@@ -10,7 +12,7 @@
 2. `Qualitative Analysis`: A focus on the narrative. These tend to evaluate competitive advantage, management allocation of capital, industry trends. The output of this analysis is signals are extracted from earnings, mgmt interviews, industry reports, news, etc. 
 
 ## Intended Outcome 
-Every public company produces three (3) core financial statements on a regular basis. This solution will establish agents, a workflow, and specific criteria, and a synthesis of these 3 core documents: 
+Every public company produces three (3) core financial statements on a regular basis. This solution will establish agents, a workflow, specific criteria, and a synthesis of these 3 core documents: 
 
 1. `income statement`: evaluating specifically: 
     - Revenue, 
@@ -59,5 +61,40 @@ Key Ratios that these documents and metrics will be contribute to are:
     - Dividend yield, 
     - Payout ratio, & 
     - Annual Dividend rate
+
+--------
+
+# Architecture 
+
+## Design Considerations 
+
+The fundamental analysis workflow is inherently multi-step. To design the right architecture for this type of process, the key question to ask is *NOT* which model to use, but *HOW TO DECOMPOSE* the problem into the appropriate agents & tools, each addressing a specific objective at the right stage of the workflow. 
+
+This leads the first consideration to `Single Agent vs. Multi Agent` in the design. This will contribute to: 
+- Context Window pollution
+- Instruction clarity
+- Parallelism
+- Testability and Debugging
+- Separation of Concerns
+
+## The Agentic System Architecture
+Our fundamental analysis system is built as a multi-agent pipeline composed of five specialized agents, coordinated by an orchestrator agent. Each agent is designed with a clear responsibility and operates on a well-defined subset of the problem, ensuring modularity, traceabilty, and reliability. 
+
+Since we know this will now be a multi-agent system, we can use an `orchestrator pattern` to manage the agents and workflow. At the core of the system, we separate concerns across three dimensions: 
+
+### 1. Data Collection
+The orchestrator runs three agents in parallel: the `FinancialDataAgent`, `NewsAndSentimentAgent`, & `RiskAgent`. These agents operate independently, each gathering and analyzing different types of information. Running them in parallel improves efficiency while preserving clear separation of concerns. 
+
+### 2. Valuation
+The orchestrator triggers the `ValuationAgent`. This phase depends on the outputs of the `FinancialDataAgent`, as valuation models require financial inputs. The agent computes intrinsic value estimates and produces a valuation verdict. 
+
+### 3. Synthesis
+The orchestrator invokes the `ReportWriterAgent`. At this stage, all intermediate analysis are available. The agent aggregates financial insights, valuation results, sentiment analysis, and risk assessments into a single, coherent investment report. 
+
+<p align-center>
+    <img src="./imgs/design-considerations.png">
+</p>
+----------
+
 
 

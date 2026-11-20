@@ -91,7 +91,7 @@ The orchestrator triggers the `ValuationAgent`. This phase depends on the output
 ### 3. Synthesis
 The orchestrator invokes the `ReportWriterAgent`. At this stage, all intermediate analysis are available. The agent aggregates financial insights, valuation results, sentiment analysis, and risk assessments into a single, coherent investment report. 
 
-<p align-center >
+<p align=center >
     <img height=400 width=400 src="./imgs/design-considerations.png">
 </p>
 ----------

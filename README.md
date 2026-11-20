@@ -11,15 +11,23 @@
 
 ## Intended Outcome 
 Every public company produces three (3) core financial statements on a regular basis. This solution will establish agents, a workflow, and specific criteria, and a synthesis of these 3 core documents: 
+
     1. `income statement`: evaluating specifically 1. Revenue, 2. Gross Profit, 3. Operating Income, 4. Net Income
+
     2. `balance sheet`:  evaluating specifically 1. Cash and Equivalents 2. Total Debt & 3. Shareholder's Equity. 
+
     3. `cash flow statement`: evaluating specifically 1. Operating Cash Flow, 2. Capital Expenditures & 3. Free Cash Flow 
 
 Key Ratios that these documents and metrics will be contribute to are: 
+
     1. `Valuation Ratios`: specifcally 1. Price to Earnings (P/E) ratio 2. Price to Book (P/B) ratio 3. Price to Sales (P/S) ratio, 4. Enterprise Value to Earnings Before Interest, Taxes, Depreciation (EV/EBITDA) & 5. Enterprise Value to Revenue (EV/R) ratio. 
+
     2. `Profitability Ratios`: specifically 1. Gross Margin, 2. Operating Margin, 3. Net Margin, 4. Return on Equity (ROE), & 5. Return on Assets (ROA). 
+
     3. `Liquiditity and Leverage Ratios`: specically 1. Current Ratio, 2. Quick Ratio, & 3. Debt-to-equity-ratio (Debt/equity). 
+
     4. `Growth Metrics` ratios: specifically 1. Revenue growth (YoY), 2. Revenue Growth (3-year), 3. Earnings Growth (YoY), & 4. Earnings Growth (Qtrly)
+    
     5. `Dividend ratios`: specifcally 1. Dividend yield, 2. Payout ratio, & 3. Annual Dividend rate
 
 

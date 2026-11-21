@@ -295,7 +295,7 @@ The *Tools* that we require for our `FinancialDataAgent` are:
 1. `get_income_statement` 
 2. `get_balance_sheet` 
 3. `get_cash_flow_statement` & 
-4. `compute_key_ratios`. 
+4. `compute_key_ratios`
 
 We will not write the logic for these tools directly in our `financial_analyst_agent.py` file, because tools are different than an Agent. We may add tools without ever modifying our Agent for example, so we want to keep a separation of concerns rule in our directory/file archtiecture. 
 
@@ -391,3 +391,23 @@ from tools.financial_tools import (
 ```
 
 ### Agent Create
+
+4. Now we can use the OpenAI Agent class to create a new Agent and pass the tools we've just created to the Agent. Go back to the `fundamentals-analysis-agent/financial_analyst_agent.py` file and insert the following code at the *Placeholder 2 Agent Create* location. 
+
+```python
+# ...
+
+# PLACEHOLDER 2 Agent CREATE: We will insert more code here to create the Agent (see Agent Create below)
+financial_data_agent = Agent(
+    name="FinancialDataAgent",
+    instructions=FINANCIAL_DATA_INSTRUCTIONS,
+    tools=[
+        get_income_statement,
+        get_balance_sheet,
+        get_cash_flow_statement,
+        compute_key_ratios,
+    ],
+    model="gpt-4o",
+```
+
+> Here from the `openai` import, we are able to use the OpenAI class `Agent` and assign it a name `financial_data_agent`. We are also able to pass, at Agent creation, a name, instructions, and tools, and the model instance that we want the Agent to use. Documentation on using the OpenAI spec is [here](https://developers.openai.com/api/docs/guides/agents/quickstart)

@@ -665,3 +665,7 @@ stock = yf.Ticker(ticker.upper())
 > - `stock.info` is a dictionary of summary fields such as P/E, margins, and the company name. compute_key_ratios reads it for the ratios, and the statement tools use it for the company name and reporting currency.
 >
 > Those attributes come back as pandas tables or a plain dictionary. The rest of financial_tools.py picks out the rows it needs, converts amounts to millions, and returns JSON for the agent.
+
+<p align="right"><small><a href="#contents">Back to Top</a></small></p>
+
+-----------

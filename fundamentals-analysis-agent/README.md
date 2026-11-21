@@ -608,8 +608,6 @@ python3 main.py --ticker ANT
 > If you are wondering what source of data the Agent is referencing to execute the analysis you need to refer back to the `tools/financial_tools.py` file. We didn't review this explicitly in the processes above, but we added an import to `yfinance` which is a third-party library, listed in requirements.txt, that downloads public market data from Yahoo Finance. Nothing in this project implements those downloads; the tools call yfinance and then reshape what it returns.
 
 > Each of the four tools starts the same way:
-
-*Yahoo SDK* 
 ```python
 stock = yf.Ticker(ticker.upper())
 ````

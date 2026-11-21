@@ -19,7 +19,7 @@
 
 2. `Qualitative Analysis`: A focus on the narrative. These tend to evaluate competitive advantage, management allocation of capital, industry trends. The output of this analysis is signals are extracted from earnings, mgmt interviews, industry reports, news, etc. 
 
-
+<p align="right"><small><a href="#contents">Back to Top</a></small></p>
 --------
 
 # Intended Outcome 
@@ -73,6 +73,7 @@ Key Ratios that these documents and metrics will be contribute to are:
     - Payout ratio, & 
     - Annual Dividend rate
 
+<p align="right"><small><a href="#contents">Back to Top</a></small></p>
 --------
 
 # Architecture 
@@ -105,6 +106,8 @@ The orchestrator invokes the `ReportWriterAgent`. At this stage, all intermediat
 <p align=center >
     <img height=400 width=400 src="./imgs/design-considerations.png">
 </p>
+
+<p align="right"><small><a href="#contents">Back to Top</a></small></p>
 
 ----------
 

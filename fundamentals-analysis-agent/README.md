@@ -2,8 +2,12 @@
 - [ ] [Purpose](#purpose)
 - [ ] [Fundamental Analysis](#fundamental-analysis)
 - [ ] [Intended Outcome](#intended-outcome)
-- [ ] 
+- [ ] [Architecture](#architecture)
+- [ ] [Development](#development)
++ [Building The Financial Data Agent](#building-the-financialdataagent)
+++ [Environment Setup](#environment-setup)
 
+----------
 
 # Purpose
 > An AI-powered fundamental stock analysis pipeline built with the OpenAI Agents SDK. Five specialist agents (financial data, valuation, news/sentiment, risk, report writer) collaborate under an Orchestrator to produce a professional investment brief for any publicly traded stock.

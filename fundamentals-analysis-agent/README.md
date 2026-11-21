@@ -615,9 +615,9 @@ stock = yf.Ticker(ticker.upper())
 ````
 
 > This snippet of code this code base implemnents `Ticker` which is `yfinance` handle for one company. Passing "AAPL" builds an object the tools then read:
-> `stock.financials` is the annual income statement, used by `get_income_statement`.
-> `stock.balance_sheet` is the annual balance sheet, used by `get_balance_sheet`.
-> `stock.cashflow` is the annual cash flow statement, used by `get_cash_flow_statement`.
-> `stock.info` is a dictionary of summary fields such as P/E, margins, and the company name. compute_key_ratios reads it for the ratios, and the statement tools use it for the company name and reporting currency.
+> - `stock.financials` is the annual income statement, used by `get_income_statement`.
+> - `stock.balance_sheet` is the annual balance sheet, used by `get_balance_sheet`.
+> - `stock.cashflow` is the annual cash flow statement, used by `get_cash_flow_statement`.
+> - `stock.info` is a dictionary of summary fields such as P/E, margins, and the company name. compute_key_ratios reads it for the ratios, and the statement tools use it for the company name and reporting currency.
 >
 > Those attributes come back as pandas tables or a plain dictionary. The rest of financial_tools.py picks out the rows it needs, converts amounts to millions, and returns JSON for the agent.

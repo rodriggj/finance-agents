@@ -9,6 +9,7 @@
 > An AI-powered fundamental stock analysis pipeline built with the OpenAI Agents SDK. Five specialist agents (financial data, valuation, news/sentiment, risk, report writer) collaborate under an Orchestrator to produce a professional investment brief for any publicly traded stock.
 
 <p align="right"><small><a href="#contents">Back to Top</a></small></p>
+
 --------
 
 # Fundamental Analysis
@@ -20,6 +21,7 @@
 2. `Qualitative Analysis`: A focus on the narrative. These tend to evaluate competitive advantage, management allocation of capital, industry trends. The output of this analysis is signals are extracted from earnings, mgmt interviews, industry reports, news, etc. 
 
 <p align="right"><small><a href="#contents">Back to Top</a></small></p>
+
 --------
 
 # Intended Outcome 
@@ -74,6 +76,7 @@ Key Ratios that these documents and metrics will be contribute to are:
     - Annual Dividend rate
 
 <p align="right"><small><a href="#contents">Back to Top</a></small></p>
+
 --------
 
 # Architecture 

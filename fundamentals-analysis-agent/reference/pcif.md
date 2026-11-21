@@ -1,8 +1,7 @@
-# Pronpting Technique: PCIF 
+# Prompting Technique: PCIF 
 
 # Persona, Context, Instructions, & Format (PCIF)
-PCIF is a four-part way to write an agent instruction so the model knows who it is, what situation it is in, what to do, and how to answer. In this project it is the string stored in FINANCIAL_DATA_INSTRUCTIONS and passed to the OpenAI model as the agent's operating policy.
-
+PCIF is a four-part way to write an agent instruction so the model knows who it is, what situation it is in, what to do, and how to answer. In this project it is the string stored in *FINANCIAL_DATA_INSTRUCTIONS* and passed to the OpenAI model as the agent's operating policy.
 
 | Letter | Part	| What it fixes	| In this agent | 
 | ------ | ---- | ------------- | ------------- | 

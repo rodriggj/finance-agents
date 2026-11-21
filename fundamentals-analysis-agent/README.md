@@ -583,3 +583,41 @@ if __name__ == "__main__":
 > 1. ValueError — Is a Python built-in Exception that executes if the ticker string is empty
 > 2. AgentsException — Comes from the OpenAI Agents SDK package, it returns if the agent run fails, or it returns no analysis
 > 3. AuthenticationError, APIConnectionError, APIStatusError — These come from the `openai` Python package we imported and return if the the OpenAI call is rejected, unreachable, or returns an error status
+
+With this code in place lets try a ticker symbol and lets see what we get. In a terminal session ensure you are in the `fundamentals-analysis-agent` directory and run the following command: 
+
+```sh
+python3 main.py --ticker AAPL
+```
+
+<p align=center >
+    <img height=400 width=400 src="./imgs/appl-ticker.png">
+</p>
+
+See if the consistency is valid by entering a new ticker symbol, say Anthropic which is *ANT*: 
+
+```sh
+python3 main.py --ticker ANT
+```
+
+<p align=center >
+    <img height=400 width=400 src="./imgs/ant-ticker.png">
+</p>
+
+*Explanation*
+> If you are wondering what source of data the Agent is referencing to execute the analysis you need to refer back to the `tools/financial_tools.py` file. We didn't review this explicitly in the processes above, but we added an import to `yfinance` which is a third-party library, listed in requirements.txt, that downloads public market data from Yahoo Finance. Nothing in this project implements those downloads; the tools call yfinance and then reshape what it returns.
+
+> Each of the four tools starts the same way:
+
+*Yahoo SDK* 
+```python
+stock = yf.Ticker(ticker.upper())
+````
+This snippet of code this code base implemnents `Ticker` which is `yfinance` handle for one company. Passing "AAPL" builds an object the tools then read:
+
+`stock.financials` is the annual income statement, used by `get_income_statement`.
+`stock.balance_sheet` is the annual balance sheet, used by `get_balance_sheet`.
+`stock.cashflow` is the annual cash flow statement, used by `get_cash_flow_statement`.
+`stock.info` is a dictionary of summary fields such as P/E, margins, and the company name. compute_key_ratios reads it for the ratios, and the statement tools use it for the company name and reporting currency.
+
+Those attributes come back as pandas tables or a plain dictionary. The rest of financial_tools.py picks out the rows it needs, converts amounts to millions, and returns JSON for the agent.

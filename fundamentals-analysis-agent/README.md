@@ -1,12 +1,14 @@
 # Contents
-- [ ] [Purpose](#)
+- [ ] [Purpose](#purpose)
 - [ ] [Fundamental Analysis](#fundamental-analysis)
+- [ ] [Intended Outcome](#intended-outcome)
 - [ ] 
 
 
 # Purpose
 > An AI-powered fundamental stock analysis pipeline built with the OpenAI Agents SDK. Five specialist agents (financial data, valuation, news/sentiment, risk, report writer) collaborate under an Orchestrator to produce a professional investment brief for any publicly traded stock.
 
+<p align="right"><small>[Back to Top](#contents)</small></p>
 --------
 
 # Fundamental Analysis
@@ -17,7 +19,10 @@
 
 2. `Qualitative Analysis`: A focus on the narrative. These tend to evaluate competitive advantage, management allocation of capital, industry trends. The output of this analysis is signals are extracted from earnings, mgmt interviews, industry reports, news, etc. 
 
-## Intended Outcome 
+
+--------
+
+# Intended Outcome 
 Every public company produces three (3) core financial statements on a regular basis. This solution will establish agents, a workflow, specific criteria, and a synthesis of these 3 core documents: 
 
 1. `income statement`: evaluating specifically: 

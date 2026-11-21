@@ -150,6 +150,8 @@ This segmentation and directory of the 1. *Framework*, 2. *Agents* build and the
 
 <p align="right"><small><a href="#contents">Back to Top</a></small></p>
 
+--------
+
 ### Environment Setup
 
 Change to the root directory
@@ -449,6 +451,10 @@ financial_data_agent = Agent(
 
 > Here from the `openai` import, we are able to use the OpenAI class `Agent` and assign it a name `financial_data_agent`. We are also able to pass, at Agent creation, a name, instructions, and tools, and the model instance that we want the Agent to use. Documentation on using the OpenAI spec is [here](https://developers.openai.com/api/docs/guides/agents/quickstart)
 
+<p align="right"><small><a href="#contents">Back to Top</a></small></p>
+
+--------
+
 ### Summary
 
 What we've done:
@@ -473,6 +479,8 @@ What this enables:
 + *financial health verdict*
 
 3. The PCIF technique enables a prompt being passed to the agent that includes strict grounding rules. Every statement must be directly supported by numbers returned by the tools. The agent is explicitly forbidden from adding unsupported qualitative commentary or vague financial language. Each section must remain self-contained, which prevents the agent from mixing balance sheet observations with cash flow analysis for exmaple. If information is missing the agent must state that explicitly instead of silently ignoring it. 
+
+<p align="right"><small><a href="#contents">Back to Top</a></small></p>
 
 ----------
 

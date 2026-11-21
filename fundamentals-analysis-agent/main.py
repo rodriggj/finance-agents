@@ -1,3 +1,13 @@
+"""CLI entry point for the fundamentals analysis pipeline.
+
+Examples:
+    python main.py
+    python main.py --ticker AAPL
+"""
+
+from __future__ import annotations
+
+import argparse
 import sys
 
 from dotenv import load_dotenv
@@ -9,7 +19,12 @@ PLACEHOLDER_VALUES = {
     "sk-your-openai-api-key-here",
 }
 
-def main() -> int:
+
+def check_api_key() -> int:
+    """Verify OPENAI_API_KEY is set and accepted by the OpenAI API.
+
+    Call this before any agent run. Returns 0 when the key is valid, 1 otherwise.
+    """
     load_dotenv()
 
     client = OpenAI()
@@ -35,6 +50,79 @@ def main() -> int:
     preview = f"{key[:7]}...{key[-4:]}" if len(key) > 12 else "(set)"
     print(f"OPENAI_API_KEY is valid ({preview}).")
     print(f"Account can list {len(model_ids)} models.")
+    return 0
+
+
+def run_financial_analysis(ticker: str) -> str:
+    """Run FinancialDataAgent for a ticker and return its structured analysis.
+
+    The agent fetches the income statement, balance sheet, cash flow statement,
+    and key ratios, then writes the summary defined in its instructions.
+    """
+    symbol = ticker.strip().upper()
+    if not symbol:
+        raise ValueError("A ticker symbol is required, for example AAPL.")
+
+    from agents import Runner
+    from agents.exceptions import AgentsException
+
+    from specialist_agents.financial_analyst_agent import financial_data_agent
+
+    load_dotenv()
+    result = Runner.run_sync(
+        financial_data_agent,
+        (
+            f"Analyze the financial statements for {symbol}. "
+            "Follow your required tool sequence and return the structured summary."
+        ),
+    )
+    if not result.final_output:
+        raise AgentsException(f"FinancialDataAgent returned no analysis for {symbol}.")
+    return str(result.final_output)
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(
+        description="Check the OpenAI API key, or run the financial analyst agent for a ticker.",
+    )
+    parser.add_argument(
+        "--ticker",
+        help="Stock ticker to analyze, for example AAPL. Omit to only check the API key.",
+    )
+    args = parser.parse_args(argv)
+
+    if args.ticker is not None and sys.version_info < (3, 10):
+        current = sys.version.split()[0]
+        print(
+            "FinancialDataAgent requires Python 3.10 or newer "
+            f"(this interpreter is {current})."
+        )
+        print("Recreate the virtual environment with a newer Python:")
+        print("  /opt/homebrew/bin/python3 -m venv .venv")
+        print("  source .venv/bin/activate")
+        print("  pip install -r requirements.txt")
+        return 1
+
+    status = check_api_key()
+    if args.ticker is None or status != 0:
+        return status
+
+    from agents.exceptions import AgentsException
+
+    print(f"Running FinancialDataAgent for {args.ticker.strip().upper()}...")
+    try:
+        analysis = run_financial_analysis(args.ticker)
+    except (
+        ValueError,
+        AgentsException,
+        AuthenticationError,
+        APIConnectionError,
+        APIStatusError,
+    ) as exc:
+        print(f"Financial analysis failed: {exc}")
+        return 1
+
+    print(analysis)
     return 0
 
 

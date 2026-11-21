@@ -411,3 +411,170 @@ financial_data_agent = Agent(
 ```
 
 > Here from the `openai` import, we are able to use the OpenAI class `Agent` and assign it a name `financial_data_agent`. We are also able to pass, at Agent creation, a name, instructions, and tools, and the model instance that we want the Agent to use. Documentation on using the OpenAI spec is [here](https://developers.openai.com/api/docs/guides/agents/quickstart)
+
+### Summary
+
+What we've done:
+1. We've identified we need multiple agents to complete the whole of our analysis. 
+2. We've used our directory structure and a *separation of concerns* software engineering principal to divide our files and our code so we can troubleshoot, scale, and repeat. 
+3. We've setup a repetive process for building multi-agent components 1. Envirnoment Setup 2. Agent Setup & 3. Tooling 
+4. We've created a `main.py` file to initiate any execution of the multiple file system. We can import and run all our files from one source. In this case we tested our API calls.
+5. We have created a `financial_analyst_agent`, which is a specialist agent that has specific instructions and tools to execute its instructions using PCIF prompting method and python code to define the logic of the tools. 
+
+What this enables: 
+1. Our `fundamentals-analysis` problem set now has 1 of 5 Agents, the `FinancialDataAgent` that can retrieve four types of financial information. It can call tools: 
++ `get_income_statement`: which will analyze revenue, margins, & earnings
++ `get_balance_sheet`: which will asssess assets, liablitites, equity, and debt
++ `get_cash_flow_statement`: which will examine operating cash flow, & free cash flow
++ `compute_key_ratios`: which will detail profitability, valuation, leverage, and growth indicators
+
+2. The instructions provided enable a defined | expected output format. The final response must be structured into 5 sections, which ensures a consistent analytical report rather than unstructured narrative. 
++ *revenue & profitablity*
++ *balance sheet health*
++ *cash flow quality*
++ *key ratios snapshot* 
++ *financial health verdict*
+
+3. The PCIF technique enables a prompt being passed to the agent that includes strict grounding rules. Every statement must be directly supported by numbers returned by the tools. The agent is explicitly forbidden from adding unsupported qualitative commentary or vague financial language. Each section must remain self-contained, which prevents the agent from mixing balance sheet observations with cash flow analysis for exmaple. If information is missing the agent must state that explicitly instead of silently ignoring it. 
+
+----------
+
+### Testing 
+
+1. Now that we have 1 of 5 agents, lets test to see if it is actually executing calls to its tooling suite and producing a repeatable outcome with our intende objectives. Before we can test the 1. *Environment Setup* 2. The *Agent* & 3. The *Tooling* we need to write some code in the `main.py` file. 
+
+Recall right now the only thing in our `main.py` file is a test to see if the OpenAI API key is valid. We need to add a call to the `FinancialDataAgent` and pass in a ticker symbol to an openly traded instrument so the analysis can be completed. 
+
+The `main.py` file needs to add a function to execute the financial analysis in the agent. To do this we need to pass a ticker symbol in a CLI command. Create this function as follows: 
+
+```python
+def run_financial_analysis(ticker: str) -> str:
+    """Run FinancialDataAgent for a ticker and return its structured analysis.
+
+    The agent fetches the income statement, balance sheet, cash flow statement,
+    and key ratios, then writes the summary defined in its instructions.
+    """
+    symbol = ticker.strip().upper()
+    if not symbol:
+        raise ValueError("A ticker symbol is required, for example AAPL.")
+
+    from agents import Runner
+    from agents.exceptions import AgentsException
+
+    from specialist_agents.financial_analyst_agent import financial_data_agent
+
+    load_dotenv()
+    result = Runner.run_sync(
+        financial_data_agent,
+        (
+            f"Analyze the financial statements for {symbol}. "
+            "Follow your required tool sequence and return the structured summary."
+        ),
+    )
+    if not result.final_output:
+        raise AgentsException(f"FinancialDataAgent returned no analysis for {symbol}.")
+    return str(result.final_output)
+```
+
+We need to refactor the API check into its own function as well. Update the `main.py` file as follows: 
+
+```python
+def check_api_key() -> int:
+    """Verify OPENAI_API_KEY is set and accepted by the OpenAI API.
+
+    Call this before any agent run. Returns 0 when the key is valid, 1 otherwise.
+    """
+    load_dotenv()
+
+    client = OpenAI()
+    key = client.api_key or ""
+
+    if key.strip() in PLACEHOLDER_VALUES:
+        print("OPENAI_API_KEY is missing. Copy .env.example to .env and set a real key.")
+        return 1
+
+    try:
+        page = client.models.list()
+        model_ids = [model.id for model in page.data]
+    except AuthenticationError:
+        print("OPENAI_API_KEY was rejected (401). Check the key on platform.openai.com.")
+        return 1
+    except APIConnectionError as exc:
+        print(f"Could not reach the OpenAI API: {exc}")
+        return 1
+    except APIStatusError as exc:
+        print(f"OpenAI API returned status {exc.status_code}: {exc.message}")
+        return 1
+
+    preview = f"{key[:7]}...{key[-4:]}" if len(key) > 12 else "(set)"
+    print(f"OPENAI_API_KEY is valid ({preview}).")
+    print(f"Account can list {len(model_ids)} models.")
+    return 0
+```
+
+Now we can run the API check, we can invoke the Financial Analysis in the correct order through the `main` function we will also create: 
+
+```python
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(
+        description="Check the OpenAI API key, or run the financial analyst agent for a ticker.",
+    )
+    parser.add_argument(
+        "--ticker",
+        help="Stock ticker to analyze, for example AAPL. Omit to only check the API key.",
+    )
+    args = parser.parse_args(argv)
+
+    if args.ticker is not None and sys.version_info < (3, 10):
+        current = sys.version.split()[0]
+        print(
+            "FinancialDataAgent requires Python 3.10 or newer "
+            f"(this interpreter is {current})."
+        )
+        print("Recreate the virtual environment with a newer Python:")
+        print("  /opt/homebrew/bin/python3 -m venv .venv")
+        print("  source .venv/bin/activate")
+        print("  pip install -r requirements.txt")
+        return 1
+
+    status = check_api_key()
+    if args.ticker is None or status != 0:
+        return status
+
+    from agents.exceptions import AgentsException
+
+    print(f"Running FinancialDataAgent for {args.ticker.strip().upper()}...")
+    try:
+        analysis = run_financial_analysis(args.ticker)
+    except (
+        ValueError,
+        AgentsException,
+        AuthenticationError,
+        APIConnectionError,
+        APIStatusError,
+    ) as exc:
+        print(f"Financial analysis failed: {exc}")
+        return 1
+
+    print(analysis)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+```
+
+> *Explanation*: `argparse` accepts one optional flag, --ticker. Omit it and the program only checks the key. Pass a symbol, such as AAPL, and it also runs the analysis. argv defaults to None, so a normal command line is used. Tests can pass a list instead, for example main(["--ticker", "AAPL"]). 
+
+> *Python version gate*: The Agents SDK and the tool code need Python 3.10 or newer. That check runs only when a ticker was provided, and it runs before any API call. On an older interpreter it prints the version and the commands to rebuild .venv, then exits with 1. A plain python main.py still performs the key check on older Python. 
+
+> *Key check*: Will execute a stop or continue. `check_api_key()` loads .env and confirms the key with OpenAI. It returns 0 or 1. The next condition exits in two cases:
+> 1. No ticker was passed, so the key check was the whole job. Its status becomes the program’s exit code.
+> 2. A ticker was passed, but the key check failed. The agent is not started.
+
+> *Run the agent*: With a valid key and a ticker, it imports `AgentsException` and calls `run_financial_analysis`. That function sends the symbol to `FinancialDataAgent` and returns the written analysis. The ticker is printed in uppercase so aapl shows up as AAPL.
+
+> *Failure Handling*: Failures stay as an exit code. These are caught and printed, then the function returns 1:
+> 1. ValueError — Is a Python built-in Exception that executes if the ticker string is empty
+> 2. AgentsException — Comes from the OpenAI Agents SDK package, it returns if the agent run fails, or it returns no analysis
+> 3. AuthenticationError, APIConnectionError, APIStatusError — These come from the `openai` Python package we imported and return if the the OpenAI call is rejected, unreachable, or returns an error status

@@ -5,7 +5,7 @@
 - [ ] [Architecture](#architecture)
 - [ ] [Development](#development)
 
-### [Building the `FinancialDataAgent`](#building-the-financialdataagent)
+### [Building the `FinancialDataAgent`](#building-the-financialdataagent-1)
 - [ ] [Environment Setup](#environment-setup)
 - [ ] [Agent Setup](#agent-setup)
 - [ ] [Tool Setup](#tool-setup)

@@ -441,7 +441,7 @@ What this enables:
 
 ### Testing 
 
-1. Now that we have 1 of 5 agents, lets test to see if it is actually executing calls to its tooling suite and producing a repeatable outcome with our intende objectives. Before we can test the 1. *Environment Setup* 2. The *Agent* & 3. The *Tooling* we need to write some code in the `main.py` file. 
+Now that we have 1 of 5 agents, lets test to see if it is actually executing calls to its tooling suite and producing a repeatable outcome with our intende objectives. Before we can test the 1. *Environment Setup* 2. The *Agent* & 3. The *Tooling* we need to write some code in the `main.py` file. 
 
 Recall right now the only thing in our `main.py` file is a test to see if the OpenAI API key is valid. We need to add a call to the `FinancialDataAgent` and pass in a ticker symbol to an openly traded instrument so the analysis can be completed. 
 
@@ -564,17 +564,22 @@ if __name__ == "__main__":
     sys.exit(main())
 ```
 
-> *Explanation*: `argparse` accepts one optional flag, --ticker. Omit it and the program only checks the key. Pass a symbol, such as AAPL, and it also runs the analysis. argv defaults to None, so a normal command line is used. Tests can pass a list instead, for example main(["--ticker", "AAPL"]). 
+> *Explanation*: 
+> `argparse` accepts one optional flag, --ticker. Omit it and the program only checks the key. Pass a symbol, such as AAPL, and it also runs the analysis. argv defaults to None, so a normal command line is used. Tests can pass a list instead, for example main(["--ticker", "AAPL"]). 
 
-> *Python version gate*: The Agents SDK and the tool code need Python 3.10 or newer. That check runs only when a ticker was provided, and it runs before any API call. On an older interpreter it prints the version and the commands to rebuild .venv, then exits with 1. A plain python main.py still performs the key check on older Python. 
+> *Python version gate*: 
+> The Agents SDK and the tool code need Python 3.10 or newer. That check runs only when a ticker was provided, and it runs before any API call. On an older interpreter it prints the version and the commands to rebuild .venv, then exits with 1. A plain python main.py still performs the key check on older Python. 
 
-> *Key check*: Will execute a stop or continue. `check_api_key()` loads .env and confirms the key with OpenAI. It returns 0 or 1. The next condition exits in two cases:
+> *Key check*: 
+> Will execute a stop or continue. `check_api_key()` loads .env and confirms the key with OpenAI. It returns 0 or 1. The next condition exits in two cases:
 > 1. No ticker was passed, so the key check was the whole job. Its status becomes the program’s exit code.
 > 2. A ticker was passed, but the key check failed. The agent is not started.
 
-> *Run the agent*: With a valid key and a ticker, it imports `AgentsException` and calls `run_financial_analysis`. That function sends the symbol to `FinancialDataAgent` and returns the written analysis. The ticker is printed in uppercase so aapl shows up as AAPL.
+> *Run the agent*: 
+> With a valid key and a ticker, it imports `AgentsException` and calls `run_financial_analysis`. That function sends the symbol to `FinancialDataAgent` and returns the written analysis. The ticker is printed in uppercase so aapl shows up as AAPL.
 
-> *Failure Handling*: Failures stay as an exit code. These are caught and printed, then the function returns 1:
+> *Failure Handling*: 
+> Failures stay as an exit code. These are caught and printed, then the function returns 1:
 > 1. ValueError — Is a Python built-in Exception that executes if the ticker string is empty
 > 2. AgentsException — Comes from the OpenAI Agents SDK package, it returns if the agent run fails, or it returns no analysis
 > 3. AuthenticationError, APIConnectionError, APIStatusError — These come from the `openai` Python package we imported and return if the the OpenAI call is rejected, unreachable, or returns an error status

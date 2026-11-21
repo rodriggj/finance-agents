@@ -200,5 +200,28 @@ if __name__ == "__main__":
 
 > NOTE: The only thing this code does is check to see if your OpenAI key is valid, it does not yet invoke our FinancialDataAgent. That will come later. 
 
+7. Create a `.gitignore` file so you .env file and the OpenAI key does not get committed to `github`. Input the following code: 
+
+```python
+# Virtual environments
+.venv/
+venv/
+
+# Environment / secrets
+.env
+
+# Logs and run artifacts
+logs/
+working_memory.txt
+*.log
+```
+
+8. Create a `tools` and an `specialist_agents` directory so you can input the Agent build scripts and the Tool scripts in thier respective directories and can reference, scale, or troubleshoot them as needed later. 
+
+```sh
+# Be sure you are in the `fundamentals-analysis-agent` directory before running the next line
+mkdir tools specialist_agents
+```
+
 ----------
 

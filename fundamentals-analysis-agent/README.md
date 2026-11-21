@@ -10,7 +10,7 @@
 - [ ] [Tool Setup](#tool-setup)
 - [ ] [Agent Create](#agent-create)
 - [ ] [Unit Testing](#unit-testing)
-- [ ] [Sequence Diagram]()
+- [ ] [Sequence Diagram](#sequence-diagram)
 
 
 ----------

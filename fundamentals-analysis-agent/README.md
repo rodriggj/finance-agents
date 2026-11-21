@@ -258,7 +258,7 @@ mkdir tools specialist_agents
 
 ### Agent Setup
 
-1. Start by defining the instructions of the agent which act as its *operating policy*. We will create a file in the `specialist_agents` directory called `financial_analyst_agent.py`. 
+Start by defining the instructions of the agent which act as its *operating policy*. We will create a file in the `specialist_agents` directory called `financial_analyst_agent.py`. 
 
 In that file, we will start by adding instructions to clearly specify the agent's role. This is similar to a prompt you may enter into a LLM session (e.g. Claude, Co-Pilot, Grok, etc). 
 

@@ -121,6 +121,8 @@ There will be 3 code components found in the directory structure that that make 
 
 This segmentation and directory of the 1. *Framework*, 2. *Agents* build and the 3. *Tooling* will continue to preserve the seperation of concerns and allow the application to 1. maintainable and 2. scalable going forward. 
 
+> NOTE: The most signficiant environment build out will come in the first development actions, it is not specific to the FinancialDataAgent. Had we started with a different Agent first, we would have listed these steps along that Agent. Environment componets are modified throughout the lifecycle of a development, so even if no changes are needed for subsequent agents, other parts of the build may need environment configuration. 
+
 ### Environment Setup
 
 1. Change to the root directory
@@ -225,3 +227,163 @@ mkdir tools specialist_agents
 
 ----------
 
+### Agent Setup
+
+1. Start by defining the instructions of the agent which act as its *operating policy*. We will create a file in the `specialist_agents` directory called `financial_analyst_agent.py`. 
+
+In that file, we will start by adding instructions to clearly specify the agent's role. This is similar to a prompt you may enter into a LLM session (e.g. Claude, Co-Pilot, Grok, etc). 
+
+What you are doing is providing instructions that we will pass to the OpenAI LLM via API using a prompting technique called PCIF (Persona, Context, Instructions, & Format).  Here we will consistently defining for the Agent we are about to create how to behave like a senior financial analyst specialized  in interpretting corporte financial statements. They also define the exact workflow the agent must follow by explicitly listing the tool calls in sequence and explaining the purpose of each one. 
+
+```python
+# file -> fundamentals-analysis-agent/specialist_agents/financial_analyst_agent.py
+
+"""
+financial_data_agent.py
+-----------------------
+Specialist agent for retrieving and interpreting financial statements.
+
+This agent is the data foundation of the pipeline. It uses four tools to
+fetch the income statement, balance sheet, cash flow statement, and a
+computed set of key ratios. It returns structured, interpreted findings
+that the Orchestrator and Valuation Agent will consume downstream.
+"""
+
+# PLACEHOLDER 1 IMPORTS: We will insert more code here to Import tools (see Tool Setup below)
+
+FINANCIAL_DATA_INSTRUCTIONS = """
+You are a senior financial analyst specializing in reading and interpreting
+corporate financial statements.
+
+Your job:
+Given a stock ticker, retrieve the company's financial statements and compute
+key fundamental ratios. Then provide a concise, structured interpretation.
+
+Steps to follow:
+1. Call get_income_statement(ticker) to fetch revenue, margins, and earnings.
+2. Call get_balance_sheet(ticker) to fetch assets, liabilities, equity, and debt.
+3. Call get_cash_flow_statement(ticker) to fetch operating, investing, and FCF.
+4. Call compute_key_ratios(ticker) to get valuation, profitability, leverage, and growth ratios.
+
+After gathering all data, write a structured summary with these sections:
+- REVENUE & PROFITABILITY: Revenue trend (growing/declining), margin quality.
+- BALANCE SHEET HEALTH: Debt levels, cash position, working capital.
+- CASH FLOW QUALITY: Is FCF growing? Does it track net income (quality indicator)?
+- KEY RATIOS SNAPSHOT: Highlight the 5-6 most important ratios for this company.
+- FINANCIAL HEALTH VERDICT: One of [STRONG | SOLID | MIXED | WEAK] with 2-3 sentence justification.
+
+STRICT RULES:
+- Every statement must be directly supported by a number from the tool outputs.
+  Do not add qualitative judgments or editorial conclusions that cannot be traced
+  to a specific data point (e.g. do not say "enhances shareholder value",
+  "reflects management discipline", or similar unsourced interpretations).
+- Each section must be self-contained. Do not reference data that belongs to a
+  later section (e.g. do not mention cash flows inside BALANCE SHEET HEALTH —
+  cash flows are covered in CASH FLOW QUALITY).
+- If a data point is unavailable, say so explicitly rather than omitting it silently.
+"""
+
+# PLACEHOLDER 2 Agent CREATE: We will insert more code here to create the Agent (see Agent Create below)
+
+```
+
+### Tool Setup
+
+2. Agents use tools to execute the functions that we specify through code, these are *Tools* we provision the agent to execute a task. Sometimes these tools can be a request to an MCP service, and API, or functions that we write in code. 
+
+The *Tools* that we require for our `FinancialDataAgent` are 1. `get_income_statement` 2. `get_balance_sheet` 3. `get_cash_flow_statement` & 4. `compute_key_ratios`. 
+
+We will not write the logic for these tools directly in our `financial_analyst_agent.py` file, because tools are different than an Agent. We may add tools without ever modifying our Agent for example, so we want to keep a separation of concerns rule in our directory/file archtiecture. 
+
+Therefore, in our `fundamentals-analysis-agent/tools` directory, we need to create another file called `financial_tools.py`. 
+
+In this file input the following code: 
+
+```python
+"""
+financial_tools.py
+------------------
+Tools for fetching and processing financial statements using yfinance.
+All tools use the @function_tool decorator from the OpenAI Agents SDK.
+"""
+
+import json
+import yfinance as yf
+import pandas as pd
+from agents import function_tool
+from tools import cache as _cache
+
+# ---------------------------------------------------------------------------
+# Helper utilities
+# ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# Tool 1: Income Statement
+# ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# Tool 2: Balance Sheet
+# ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# Tool 3: Cash Flow Statement
+# ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# Tool 4: Key Ratios
+# ---------------------------------------------------------------------------
+
+```
+
+Here you can see that we've once again allowed ourselves a method to import other helper utilities, libraries, and make reference to other files we will use. I've also used comments to draft psuedo-code areas of functionality/logic we will have to write to implement the logic we want to define for our Agent to execute. The file will get too large to write an explanation for all the code, so if you want to see the Python code that gets executed for each of these areas, review the file `fundamentals-analysis-agent/tools/financial_tools.py`. 
+
+A small example would look like this: 
+
+```python
+# ---------------------------------------------------------------------------
+# Helper utilities
+# ---------------------------------------------------------------------------
+
+def _safe_float(value) -> float | None:
+    """Convert a value to float, returning None if not possible."""
+    try:
+        if value is None or (isinstance(value, float) and pd.isna(value)):
+            return None
+        return round(float(value), 2)
+    except (TypeError, ValueError):
+        return None
+
+
+def _millions(value) -> float | None:
+    """Convert a value to millions, rounded to 2 decimal places."""
+    v = _safe_float(value)
+    return round(v / 1_000_000, 2) if v is not None else None
+
+
+def _extract_row(df: pd.DataFrame, *row_names: str, col) -> float | None:
+    """Try multiple row name variants and return the first match."""
+    for name in row_names:
+        try:
+            if name in df.index:
+                return _millions(df.loc[name, col])
+        except (KeyError, TypeError):
+            continue
+    return None
+``` 
+
+> Here you see Helper utilities that the Agent will use to do data formatting and extracting data from rows. Similar python logic is written for Tool 1: Income Statement, Tool 2: Balance Sheet, etc. 
+
+3. These `tools` will need to be imported into our `financial_analyst_agent.py` file, which was the Placeholder 1 reference above. Go back to the `fundamentals-analysis-agent/financial_analyst_agent.py` file and insert the following code now that the `fundamentals-analysis-agent/financial_tools.py` file is creaetd. 
+
+```python
+# PLACEHOLDER 1 IMPORTS: We will insert more code here to Import tools (see Tool Setup below)
+from agents import Agent
+from tools.financial_tools import (
+    get_income_statement,
+    get_balance_sheet,
+    get_cash_flow_statement,
+    compute_key_ratios,
+)
+```
+
+### Agent Create

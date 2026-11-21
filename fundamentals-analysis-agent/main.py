@@ -9,7 +9,6 @@ PLACEHOLDER_VALUES = {
     "sk-your-openai-api-key-here",
 }
 
-
 def main() -> int:
     load_dotenv()
 

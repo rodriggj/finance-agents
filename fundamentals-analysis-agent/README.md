@@ -99,7 +99,29 @@ The orchestrator invokes the `ReportWriterAgent`. At this stage, all intermediat
 
 # Development
 
-## Environment Setup
+## Building the `FinancialDataAgent`
+
+The `FinancialDataAgent` acts as a specialized data analysis component responsible for retrieving and interpreting a company's financial statements. Given a stock ticker, the `FinancialDataAgent` systematically invokes dedicated tools to collect the income statement, balance sheet, cash flow statement, and key financial ratios. 
+
+Based on these inputs, the agent produces a structured and data-driven analysis coverting revenue and profitability trends, balance sheet health, cash-flow quality, and a snapshot of key ratios. 
+
+The agent is constrained to generate explanations strictly grounded in the retrieved data, ensuring that every statement is traceable to a specific numerical value. 
+
+This agent is the data foundation of the entire pipeline.
+
+<p align=center >
+    <img height=400 width=400 src="./imgs/financialDataAgent.png">
+</p>
+
+
+There will be 3 code components found in the directory structure that that make up the `FinancialDataAgent`. 
+1. Foundational code for the development *Environment* | framework | directory structure to work. This includes utilities, libraries, folder structure, imports, and `main.py`.
+2. Code that creates the *Agent*, found in `specialist_agents/financial_analyst_agent.py`. 
+3. Code that provides the *Tools* the agent uses, found in `tools/financial_tools.py`
+
+This segmentation and directory of the 1. *Framework*, 2. *Agents* build and the 3. *Tooling* will continue to preserve the seperation of concerns and allow the application to 1. maintainable and 2. scalable going forward. 
+
+### Environment Setup
 
 1. Change to the root directory
 
@@ -123,35 +145,60 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
-5. Ensure that you have an OpenAPI key from this site: [OpenAI](https://platform.openai.com/api-keys)
-
-
-## Building the `FinancialDataAgent`
-
-The `FinancialDataAgent` acts as a specialized data analysis component responsible for retrieving and interpreting a company's financial statements. Given a stock ticker, the `FinancialDataAgent` systematically invokes dedicated tools to collect the income statement, balance sheet, cash flow statement, and key financial ratios. 
-
-Based on these inputs, the agent produces a structured and data-driven analysis coverting revenue and profitability trends, balance sheet health, cash-flow quality, and a snapshot of key ratios. 
-
-The agent is constrained to generate explanations strictly grounded in the retrieved data, ensuring that every statement is traceable to a specific numerical value. 
-
-This agent is the data foundation of the entire pipeline.
-
-<p align=center >
-    <img height=400 width=400 src="./imgs/financialDataAgent.png">
-</p>
+5. Ensure that you have an OpenAPI key from this site: [OpenAI](https://platform.openai.com/api-keys), and paste into the `.env.example` file. Replace the `sk-your-openai-api-key-here` with your actual key.
 
 ```python
-from agents import Agent
-from fundamentaL_analyst_agent.tools.financial_tools import(
-    get_income_statement, 
-    get_balance_sheet, 
-    get_cash_flow_statement,
-    compute_key_ratios
-)
-
-
-
+OPENAI_API_KEY=sk-your-openai-api-key-here
 ```
+
+6. Create a file called `main.py` and input the following code, this will verify that you set up your OpenAI API key correctly. 
+
+```python
+import sys
+
+from dotenv import load_dotenv
+from openai import APIConnectionError, APIStatusError, AuthenticationError, OpenAI
+
+
+PLACEHOLDER_VALUES = {
+    "",
+    "sk-your-openai-api-key-here",
+}
+
+def main() -> int:
+    load_dotenv()
+
+    client = OpenAI()
+    key = client.api_key or ""
+
+    if key.strip() in PLACEHOLDER_VALUES:
+        print("OPENAI_API_KEY is missing. Copy .env.example to .env and set a real key.")
+        return 1
+
+    try:
+        page = client.models.list()
+        model_ids = [model.id for model in page.data]
+    except AuthenticationError:
+        print("OPENAI_API_KEY was rejected (401). Check the key on platform.openai.com.")
+        return 1
+    except APIConnectionError as exc:
+        print(f"Could not reach the OpenAI API: {exc}")
+        return 1
+    except APIStatusError as exc:
+        print(f"OpenAI API returned status {exc.status_code}: {exc.message}")
+        return 1
+
+    preview = f"{key[:7]}...{key[-4:]}" if len(key) > 12 else "(set)"
+    print(f"OPENAI_API_KEY is valid ({preview}).")
+    print(f"Account can list {len(model_ids)} models.")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+```
+
+> NOTE: The only thing this code does is check to see if your OpenAI key is valid, it does not yet invoke our FinancialDataAgent. That will come later. 
 
 ----------
 

@@ -4,8 +4,12 @@
 - [ ] [Intended Outcome](#intended-outcome)
 - [ ] [Architecture](#architecture)
 - [ ] [Development](#development)
-+ [Building The Financial Data Agent](#building-the-financialdataagent)
-++ [Environment Setup](#environment-setup)
+
+# [Building the `FinancialDataAgent`](#building-the-financialdataagent)
+- [ ] [Environment Setup](#environment-setup)
+- [ ] [Agent Setup](#agent-setup)
+- [ ] [Tool Setup](#tool-setup)
+
 
 ----------
 

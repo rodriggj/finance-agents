@@ -291,7 +291,11 @@ STRICT RULES:
 
 2. Agents use tools to execute the functions that we specify through code, these are *Tools* we provision the agent to execute a task. Sometimes these tools can be a request to an MCP service, and API, or functions that we write in code. 
 
-The *Tools* that we require for our `FinancialDataAgent` are 1. `get_income_statement` 2. `get_balance_sheet` 3. `get_cash_flow_statement` & 4. `compute_key_ratios`. 
+The *Tools* that we require for our `FinancialDataAgent` are:
+1. `get_income_statement` 
+2. `get_balance_sheet` 
+3. `get_cash_flow_statement` & 
+4. `compute_key_ratios`. 
 
 We will not write the logic for these tools directly in our `financial_analyst_agent.py` file, because tools are different than an Agent. We may add tools without ever modifying our Agent for example, so we want to keep a separation of concerns rule in our directory/file archtiecture. 
 

@@ -1,4 +1,4 @@
-# Purpose: 
+# Purpose
 > An AI-powered fundamental stock analysis pipeline built with the OpenAI Agents SDK. Five specialist agents (financial data, valuation, news/sentiment, risk, report writer) collaborate under an Orchestrator to produce a professional investment brief for any publicly traded stock.
 
 --------
@@ -97,13 +97,61 @@ The orchestrator invokes the `ReportWriterAgent`. At this stage, all intermediat
 
 ----------
 
-# Building the Agents
+# Development
 
-## `FinancialDataAgent`
+## Environment Setup
 
+1. Change to the root directory
+
+```sh
+cd fundamentals-analysis-agent
+```
+
+2. Create the virtual environment
+```sh
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+3. Install the dependencies 
+```sh
+pip install -r requirements.txt
+```
+
+4. Copy your OpenAPI key. Copy .env.example to .env and add your key: 
+```sh
+cp .env.example .env
+```
+
+5. Ensure that you have an OpenAPI key from this site: [OpenAI](https://platform.openai.com/api-keys)
+
+
+## Building the `FinancialDataAgent`
+
+The `FinancialDataAgent` acts as a specialized data analysis component responsible for retrieving and interpreting a company's financial statements. Given a stock ticker, the `FinancialDataAgent` systematically invokes dedicated tools to collect the income statement, balance sheet, cash flow statement, and key financial ratios. 
+
+Based on these inputs, the agent produces a structured and data-driven analysis coverting revenue and profitability trends, balance sheet health, cash-flow quality, and a snapshot of key ratios. 
+
+The agent is constrained to generate explanations strictly grounded in the retrieved data, ensuring that every statement is traceable to a specific numerical value. 
+
+This agent is the data foundation of the entire pipeline.
 
 <p align=center >
     <img height=400 width=400 src="./imgs/financialDataAgent.png">
 </p>
 
+```python
+from agents import Agent
+from fundamentaL_analyst_agent.tools.financial_tools import(
+    get_income_statement, 
+    get_balance_sheet, 
+    get_cash_flow_statement,
+    compute_key_ratios
+)
+
+
+
+```
+
 ----------
+

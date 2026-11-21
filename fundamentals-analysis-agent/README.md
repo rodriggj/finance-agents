@@ -8,7 +8,7 @@
 # Purpose
 > An AI-powered fundamental stock analysis pipeline built with the OpenAI Agents SDK. Five specialist agents (financial data, valuation, news/sentiment, risk, report writer) collaborate under an Orchestrator to produce a professional investment brief for any publicly traded stock.
 
-<p align="right"><small>[Back to Top](#contents)</small></p>
+<p align="right"><small><a href="#contents">Back to Top</a></small></p>
 --------
 
 # Fundamental Analysis

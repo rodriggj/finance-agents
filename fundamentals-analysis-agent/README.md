@@ -10,6 +10,7 @@
 - [ ] [Tool Setup](#tool-setup)
 - [ ] [Agent Create](#agent-create)
 - [ ] [Unit Testing](#unit-testing)
+- [ ] [Sequence Diagram]()
 
 
 ----------
@@ -666,6 +667,11 @@ stock = yf.Ticker(ticker.upper())
 >
 > Those attributes come back as pandas tables or a plain dictionary. The rest of financial_tools.py picks out the rows it needs, converts amounts to millions, and returns JSON for the agent.
 
+<p align="right"><small><a href="#contents">Back to Top</a></small></p>
+
+----------
+
+### Sequence Diagram
 
 A visual depcition of what is going on looks like this: 
 
@@ -674,10 +680,6 @@ A visual depcition of what is going on looks like this:
 <p align=center >
     <img height=400 width=400 src="./imgs/fin-data-agent-sf.png">
 </p>
-
-
-
-
 
 
 <p align="right"><small><a href="#contents">Back to Top</a></small></p>

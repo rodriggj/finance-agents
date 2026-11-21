@@ -148,6 +148,8 @@ This segmentation and directory of the 1. *Framework*, 2. *Agents* build and the
 
 > NOTE: The most signficiant environment build out will come in the first development actions, it is not specific to the FinancialDataAgent. Had we started with a different Agent first, we would have listed these steps along that Agent. Environment componets are modified throughout the lifecycle of a development, so even if no changes are needed for subsequent agents, other parts of the build may need environment configuration. 
 
+<p align="right"><small><a href="#contents">Back to Top</a></small></p>
+
 ### Environment Setup
 
 1. Change to the root directory
@@ -250,6 +252,8 @@ working_memory.txt
 mkdir tools specialist_agents
 ```
 
+<p align="right"><small><a href="#contents">Back to Top</a></small></p>
+
 ----------
 
 ### Agent Setup
@@ -311,6 +315,10 @@ STRICT RULES:
 # PLACEHOLDER 2 Agent CREATE: We will insert more code here to create the Agent (see Agent Create below)
 
 ```
+
+<p align="right"><small><a href="#contents">Back to Top</a></small></p>
+
+---------
 
 ### Tool Setup
 
@@ -414,6 +422,10 @@ from tools.financial_tools import (
     compute_key_ratios,
 )
 ```
+
+<p align="right"><small><a href="#contents">Back to Top</a></small></p>
+
+---------
 
 ### Agent Create
 

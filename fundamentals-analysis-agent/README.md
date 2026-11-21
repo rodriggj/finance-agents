@@ -3,12 +3,13 @@
 - [ ] [Fundamental Analysis](#fundamental-analysis)
 - [ ] [Intended Outcome](#intended-outcome)
 - [ ] [Architecture](#architecture)
-- [ ] [Development](#development)
 
 ### [Building the `FinancialDataAgent`](#building-the-financialdataagent-1)
 - [ ] [Environment Setup](#environment-setup)
 - [ ] [Agent Setup](#agent-setup)
 - [ ] [Tool Setup](#tool-setup)
+- [ ] [Agent Create](#agent-create)
+- [ ] [Unit Testing](#testing)
 
 
 ----------
@@ -484,7 +485,7 @@ What this enables:
 
 ----------
 
-### Testing 
+### Unit Testing 
 
 Now that we have 1 of 5 agents, lets test to see if it is actually executing calls to its tooling suite and producing a repeatable outcome with our intende objectives. Before we can test the 1. *Environment Setup* 2. The *Agent* & 3. The *Tooling* we need to write some code in the `main.py` file. 
 

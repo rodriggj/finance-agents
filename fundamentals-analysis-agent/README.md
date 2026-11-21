@@ -152,35 +152,35 @@ This segmentation and directory of the 1. *Framework*, 2. *Agents* build and the
 
 ### Environment Setup
 
-1. Change to the root directory
+Change to the root directory
 
 ```sh
 cd fundamentals-analysis-agent
 ```
 
-2. Create the virtual environment
+Create the virtual environment
 ```sh
 python3 -m venv .venv
 source .venv/bin/activate
 ```
 
-3. Install the dependencies 
+Install the dependencies 
 ```sh
 pip install -r requirements.txt
 ```
 
-4. Copy your OpenAPI key. Copy .env.example to .env and add your key: 
+Copy your OpenAPI key. Copy .env.example to .env and add your key: 
 ```sh
 cp .env.example .env
 ```
 
-5. Ensure that you have an OpenAPI key from this site: [OpenAI](https://platform.openai.com/api-keys), and paste into the `.env.example` file. Replace the `sk-your-openai-api-key-here` with your actual key.
+Ensure that you have an OpenAPI key from this site: [OpenAI](https://platform.openai.com/api-keys), and paste into the `.env.example` file. Replace the `sk-your-openai-api-key-here` with your actual key.
 
 ```python
 OPENAI_API_KEY=sk-your-openai-api-key-here
 ```
 
-6. Create a file called `main.py` and input the following code, this will verify that you set up your OpenAI API key correctly. 
+Create a file called `main.py` and input the following code, this will verify that you set up your OpenAI API key correctly. 
 
 ```python
 import sys
@@ -229,7 +229,7 @@ if __name__ == "__main__":
 
 > NOTE: The only thing this code does is check to see if your OpenAI key is valid, it does not yet invoke our FinancialDataAgent. That will come later. 
 
-7. Create a `.gitignore` file so you .env file and the OpenAI key does not get committed to `github`. Input the following code: 
+Create a `.gitignore` file so you .env file and the OpenAI key does not get committed to `github`. Input the following code: 
 
 ```python
 # Virtual environments
@@ -245,7 +245,7 @@ working_memory.txt
 *.log
 ```
 
-8. Create a `tools` and an `specialist_agents` directory so you can input the Agent build scripts and the Tool scripts in thier respective directories and can reference, scale, or troubleshoot them as needed later. 
+Create a `tools` and an `specialist_agents` directory so you can input the Agent build scripts and the Tool scripts in thier respective directories and can reference, scale, or troubleshoot them as needed later. 
 
 ```sh
 # Be sure you are in the `fundamentals-analysis-agent` directory before running the next line
@@ -322,7 +322,7 @@ STRICT RULES:
 
 ### Tool Setup
 
-2. Agents use tools to execute the functions that we specify through code, these are *Tools* we provision the agent to execute a task. Sometimes these tools can be a request to an MCP service, and API, or functions that we write in code. 
+Agents use tools to execute the functions that we specify through code, these are *Tools* we provision the agent to execute a task. Sometimes these tools can be a request to an MCP service, and API, or functions that we write in code. 
 
 The *Tools* that we require for our `FinancialDataAgent` are:
 1. `get_income_statement` 
@@ -410,7 +410,7 @@ def _extract_row(df: pd.DataFrame, *row_names: str, col) -> float | None:
 
 > Here you see Helper utilities that the Agent will use to do data formatting and extracting data from rows. Similar python logic is written for Tool 1: Income Statement, Tool 2: Balance Sheet, etc. 
 
-3. These `tools` will need to be imported into our `financial_analyst_agent.py` file, which was the Placeholder 1 reference above. Go back to the `fundamentals-analysis-agent/financial_analyst_agent.py` file and insert the following code now that the `fundamentals-analysis-agent/financial_tools.py` file is creaetd. 
+These `tools` will need to be imported into our `financial_analyst_agent.py` file, which was the Placeholder 1 reference above. Go back to the `fundamentals-analysis-agent/financial_analyst_agent.py` file and insert the following code now that the `fundamentals-analysis-agent/financial_tools.py` file is creaetd. 
 
 ```python
 # PLACEHOLDER 1 IMPORTS: We will insert more code here to Import tools (see Tool Setup below)
@@ -429,7 +429,7 @@ from tools.financial_tools import (
 
 ### Agent Create
 
-4. Now we can use the OpenAI Agent class to create a new Agent and pass the tools we've just created to the Agent. Go back to the `fundamentals-analysis-agent/financial_analyst_agent.py` file and insert the following code at the *Placeholder 2 Agent Create* location. 
+Now we can use the OpenAI Agent class to create a new Agent and pass the tools we've just created to the Agent. Go back to the `fundamentals-analysis-agent/financial_analyst_agent.py` file and insert the following code at the *Placeholder 2 Agent Create* location. 
 
 ```python
 # ...

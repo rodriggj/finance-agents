@@ -44,7 +44,7 @@ Each method produces one of five valuation levels:
 The agent then synthesizes these two perspectives inot a structured valuation report, including a final verdict, a confidence interval (High/Medium/Low) based on the consistency between methods, and a clear explanation of key assumptions and risks. By combining quantitative rigor with contorlled reasoning rules, the `ValuationAgent` delivers transparent and reproducible valuation insights that can be used for downstream investment decisions. 
 
 <p align=center >
-    <img height=400 width=400 src="../imgs/value-agent .png">
+    <img height=400 width=400 src="../imgs/value-agent.png">
 </p>
 
 Repeating the same process as was found in the `FinancialDataAgent`, & the `NewsAndSentimentAgent` we will be once again modifying or building the following 3 code components. 

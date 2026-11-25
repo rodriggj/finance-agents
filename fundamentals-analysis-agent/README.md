@@ -4,22 +4,6 @@
 - [ ] [Intended Outcome](#intended-outcome)
 - [ ] [Architecture](#architecture)
 
-### [Building the `FinancialDataAgent`](#building-the-financialdataagent-1)
-- [ ] [Environment Setup](#environment-setup)
-- [ ] [Agent Setup](#agent-setup)
-- [ ] [Tool Setup](#tool-setup)
-- [ ] [Agent Create](#agent-create)
-- [ ] [Unit Testing](#unit-testing)
-- [ ] [Sequence Diagram](#sequence-diagram)
-
-### [Building the `NewsAndSentimentAgent`](#)
-- [ ] [Environment Setup](#)
-- [ ] [Agent Setup](#)
-- [ ] [Tool Setup](#)
-- [ ] [Agent Create](#)
-- [ ] [Unit Testing](#)
-- [ ] [Sequence Diagram](#)
-
 ----------
 
 # Purpose

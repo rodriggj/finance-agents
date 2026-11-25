@@ -24,7 +24,7 @@ The agent first determines appropriate DCF assumptions, such as growth rate, dis
 
 Five key metrics are considered: EV/EBITDA, foward P/E, trailing P/E, price-to-sales, and price-to-book. Each metric is assigned a weight, enabling the computation of a weighted average valuation across all indicators. The reason for weighting the metrics, rather than averaging them equally, is that not all multples are equally informative: they differ in how wideley investors rely on them, how comparable they are across capital structures, and how well they apply to businesses with low earnings or intangible-heavy assets. The weights are therefore set to reflect the reliability and practial relevance of each metric. 
 
-|        |       |       | 
+| Metric | Explanation | Weights (%) | 
 | ------ | ----- | ----- |
 | Forward P/E | reflects market expectations about near-term earnings growth and is the most widely used metric among institutional investors, which is why it carries the hightest weight | 30% | 
 | EV/EVITDA | its above the financing lne, making it comparable across companies with different capital structures. It is a standard multiple in M&A and private equity analysis and earns the second-highest weight | 25% | 

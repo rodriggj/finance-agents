@@ -14,20 +14,20 @@
 
 ## Building the `NewsAndSentimentAgent`
 
-lorem ipsum
+The `NewsAndSentimentAgent` is a specialized component responsible for retrieving recent news and assessing market sentiment for a given company. 
+
+For a given stock ticker, the `NewsAndSentimentAgent` invokes dedicated tools to collect the latest news articles and compute an aggregate sentiment score. 
+
+The `NewsAndSentimentAgent` produces a structured sentiment report including the market narrative, a five-level scale sentiment verdict, key bullish catalysts, key bearish risks, material risk flags, and a sentiment confidence level. 
 
 <p align=center >
     <img height=400 width=400 src="../imgs/news-and-sentiment-agent.png">
 </p>
 
-There will be 3 code components found in the directory structure that that make up the `FinancialDataAgent`. 
+Repeating the same process as was found in the `FinancialDataAgent` we will be once again modifying or building the following 3 code components. 
 1. Foundational code for the development *Environment* | framework | directory structure to work. This includes utilities, libraries, folder structure, imports, and `main.py`.
-2. Code that creates the *Agent*, found in `specialist_agents/financial_analyst_agent.py`. 
-3. Code that provides the *Tools* the agent uses, found in `tools/financial_tools.py`
-
-This segmentation and directory of the 1. *Framework*, 2. *Agents* build and the 3. *Tooling* will continue to preserve the seperation of concerns and allow the application to 1. maintainable and 2. scalable going forward. 
-
-> NOTE: The most signficiant environment build out will come in the first development actions, it is not specific to the FinancialDataAgent. Had we started with a different Agent first, we would have listed these steps along that Agent. Environment componets are modified throughout the lifecycle of a development, so even if no changes are needed for subsequent agents, other parts of the build may need environment configuration. 
+2. Code that creates the *Agent*, found in `specialist_agents/news_and_sentiment_agent.py`. 
+3. Code that provides the *Tools* the agent uses, found in `tools/news_tools.py`
 
 <p align="right"><small><a href="#contents">Back to Top</a></small></p>
 
@@ -141,58 +141,77 @@ mkdir tools specialist_agents
 
 ### Agent Setup
 
-Start by defining the instructions of the agent which act as its *operating policy*. We will create a file in the `specialist_agents` directory called `financial_analyst_agent.py`. 
+Start by defining the instructions of the agent which act as its *operating policy*. We will create a file in the `specialist_agents` directory called `news_sentiment_agent.py`. 
 
 In that file, we will start by adding instructions to clearly specify the agent's role. This is similar to a prompt you may enter into a LLM session (e.g. Claude, Co-Pilot, Grok, etc). 
 
 What you are doing is providing instructions that we will pass to the OpenAI LLM via API using a prompting technique called PCIF (Persona, Context, Instructions, & Format) [here](./reference/pcif.md). Here we will consistently defining for the Agent we are about to create how to behave like a senior financial analyst specialized  in interpretting corporte financial statements. They also define the exact workflow the agent must follow by explicitly listing the tool calls in sequence and explaining the purpose of each one. 
 
 ```python
-# file -> fundamentals-analysis-agent/specialist_agents/financial_analyst_agent.py
+# file -> fundamentals-analysis-agent/specialist_agents/news-sentiment-agent.py
 
 """
-financial_data_agent.py
+news_sentiment_agent.py
 -----------------------
-Specialist agent for retrieving and interpreting financial statements.
+Specialist agent for news retrieval and market sentiment scoring.
 
-This agent is the data foundation of the pipeline. It uses four tools to
-fetch the income statement, balance sheet, cash flow statement, and a
-computed set of key ratios. It returns structured, interpreted findings
-that the Orchestrator and Valuation Agent will consume downstream.
+This agent fetches recent news for a stock and produces a structured
+sentiment assessment: an aggregate score, key market narratives, and
+any risk flags (regulatory issues, fraud, lawsuits) that warrant attention.
+
+The sentiment output complements quantitative data with qualitative,
+forward-looking market signals.
 """
 
 # PLACEHOLDER 1 IMPORTS: We will insert more code here to Import tools (see Tool Setup below)
 
-FINANCIAL_DATA_INSTRUCTIONS = """
-You are a senior financial analyst specializing in reading and interpreting
-corporate financial statements.
+NEWS_SENTIMENT_INSTRUCTIONS = """
+You are a market intelligence analyst specializing in news analysis
+and investor sentiment for publicly traded companies.
 
 Your job:
-Given a stock ticker, retrieve the company's financial statements and compute
-key fundamental ratios. Then provide a concise, structured interpretation.
+Retrieve and analyze recent news for a stock ticker to surface the current
+market narrative, sentiment, and any material risk events.
 
 Steps to follow:
-1. Call get_income_statement(ticker) to fetch revenue, margins, and earnings.
-2. Call get_balance_sheet(ticker) to fetch assets, liabilities, equity, and debt.
-3. Call get_cash_flow_statement(ticker) to fetch operating, investing, and FCF.
-4. Call compute_key_ratios(ticker) to get valuation, profitability, leverage, and growth ratios.
 
-After gathering all data, write a structured summary with these sections:
-- REVENUE & PROFITABILITY: Revenue trend (growing/declining), margin quality.
-- BALANCE SHEET HEALTH: Debt levels, cash position, working capital.
-- CASH FLOW QUALITY: Is FCF growing? Does it track net income (quality indicator)?
-- KEY RATIOS SNAPSHOT: Highlight the 5-6 most important ratios for this company.
-- FINANCIAL HEALTH VERDICT: One of [STRONG | SOLID | MIXED | WEAK] with 2-3 sentence justification.
+1. CALL search_recent_news(ticker, max_results=15)
+   This fetches the latest headlines with preliminary sentiment labels.
 
-STRICT RULES:
-- Every statement must be directly supported by a number from the tool outputs.
-  Do not add qualitative judgments or editorial conclusions that cannot be traced
-  to a specific data point (e.g. do not say "enhances shareholder value",
-  "reflects management discipline", or similar unsourced interpretations).
-- Each section must be self-contained. Do not reference data that belongs to a
-  later section (e.g. do not mention cash flows inside BALANCE SHEET HEALTH —
-  cash flows are covered in CASH FLOW QUALITY).
-- If a data point is unavailable, say so explicitly rather than omitting it silently.
+2. CALL analyze_sentiment(news_json) with the JSON output from step 1.
+   This produces an aggregate sentiment score and key themes.
+
+3. WRITE A STRUCTURED SENTIMENT REPORT with these sections:
+
+   - MARKET NARRATIVE: In 2-3 sentences, what is the dominant story the market
+     is telling about this company right now? (e.g., "The market is focused on
+     Apple's AI integration, strong services revenue, and upcoming product cycle.")
+
+   - SENTIMENT VERDICT: [STRONGLY BULLISH | BULLISH | NEUTRAL |
+     BEARISH | STRONGLY BEARISH] with the aggregate score.
+
+   - KEY BULLISH CATALYSTS: Bullet list of positive themes from headlines.
+     (e.g., earnings beat, new product launch, analyst upgrades, buybacks)
+
+   - KEY BEARISH RISKS: Bullet list of negative themes.
+     (e.g., regulatory concerns, margin pressure, competitive threats)
+
+   - MATERIAL RISK FLAGS: Any headlines involving lawsuits, investigations,
+     fraud, recalls, or regulatory actions. These are high-priority.
+     If none, state "No material risk flags identified."
+
+   - SENTIMENT CONFIDENCE: [HIGH | MEDIUM | LOW] based on the volume
+     and recency of news. Low if fewer than 5 articles found.
+
+   - RAW NEWS SOURCES: List every article from all_articles in the sentiment
+     result as a numbered list with this format for each entry:
+     [N] <title> — <publisher> (<published_at>) | <sentiment> | | <score> | <url>
+         First sentence: <first_sentence>  (omit this line if first_sentence is null)
+     This section is mandatory. It allows readers to verify the analysis
+     against the original sources.
+
+Focus on substance, not noise. One major regulatory investigation matters more
+than ten generic "stock rises" headlines.
 """
 
 # PLACEHOLDER 2 Agent CREATE: We will insert more code here to create the Agent (see Agent Create below)
@@ -207,102 +226,109 @@ STRICT RULES:
 
 Agents use tools to execute the functions that we specify through code, these are *Tools* we provision the agent to execute a task. Sometimes these tools can be a request to an MCP service, and API, or functions that we write in code. 
 
-The *Tools* that we require for our `FinancialDataAgent` are:
-1. `get_income_statement` 
-2. `get_balance_sheet` 
-3. `get_cash_flow_statement` & 
-4. `compute_key_ratios`
+The *Tools* that we require for our `NewsAndSentimentAgent` are:
+1. `search_recent_news` 
+2. `analyzez_sentiment` 
 
-We will not write the logic for these tools directly in our `financial_analyst_agent.py` file, because tools are different than an Agent. We may add tools without ever modifying our Agent for example, so we want to keep a separation of concerns rule in our directory/file archtiecture. 
+We will not write the logic for these tools directly in our `news-sentiment-agent.md` file, because tools are different than an Agent. We may add tools without ever modifying our Agent for example, so we want to keep a separation of concerns rule in our directory/file archtiecture. 
 
-Therefore, in our `fundamentals-analysis-agent/tools` directory, we need to create another file called `financial_tools.py`. 
+Therefore, in our `fundamentals-analysis-agent/tools` directory, we need to create another file called `news_tools.py`. 
 
 In this file input the following code: 
 
 ```python
 """
-financial_tools.py
-------------------
-Tools for fetching and processing financial statements using yfinance.
-All tools use the @function_tool decorator from the OpenAI Agents SDK.
+news_tools.py
+-------------
+Tools for fetching recent news and scoring market sentiment for a given ticker.
+Uses yfinance for free news retrieval with no API key required.
 """
 
 import json
+import re
+from datetime import datetime, timezone
 import yfinance as yf
-import pandas as pd
 from agents import function_tool
 from tools import cache as _cache
 
+
 # ---------------------------------------------------------------------------
-# Helper utilities
+# Sentiment lexicon — simple but effective for financial news
 # ---------------------------------------------------------------------------
 
 # ---------------------------------------------------------------------------
-# Tool 1: Income Statement
+# Schema validation
 # ---------------------------------------------------------------------------
 
 # ---------------------------------------------------------------------------
-# Tool 2: Balance Sheet
+# Tool 1: Search Recent News
 # ---------------------------------------------------------------------------
 
 # ---------------------------------------------------------------------------
-# Tool 3: Cash Flow Statement
+# Tool 2: Analyze Sentiment
 # ---------------------------------------------------------------------------
-
-# ---------------------------------------------------------------------------
-# Tool 4: Key Ratios
-# ---------------------------------------------------------------------------
-
 ```
 
-Here you can see that we've once again allowed ourselves a method to import other helper utilities, libraries, and make reference to other files we will use. I've also used comments to draft psuedo-code areas of functionality/logic we will have to write to implement the logic we want to define for our Agent to execute. The file will get too large to write an explanation for all the code, so if you want to see the Python code that gets executed for each of these areas, review the file `fundamentals-analysis-agent/tools/financial_tools.py`. 
+Here you can see that we've once again allowed ourselves a method to import other helper utilities, libraries, and make reference to other files we will use. I've also used comments to draft psuedo-code areas of functionality/logic we will have to write to implement the logic we want to define for our Agent to execute. The file will get too large to write an explanation for all the code, so if you want to see the Python code that gets executed for each of these areas, review the file `fundamentals-analysis-agent/tools/news_tools.py`. 
 
 A small example would look like this: 
 
 ```python
 # ---------------------------------------------------------------------------
-# Helper utilities
+# Sentiment lexicon — simple but effective for financial news
 # ---------------------------------------------------------------------------
 
-def _safe_float(value) -> float | None:
-    """Convert a value to float, returning None if not possible."""
-    try:
-        if value is None or (isinstance(value, float) and pd.isna(value)):
-            return None
-        return round(float(value), 2)
-    except (TypeError, ValueError):
-        return None
+BULLISH_SIGNALS = [
+    "beat", "beats", "surpass", "record", "growth", "profit", "revenue",
+    "upgrade", "buy", "outperform", "strong", "rally", "surge", "rises",
+    "gains", "positive", "innovative", "launch", "partnership", "expansion",
+    "dividend", "buyback", "raised", "exceeds", "momentum", "bullish",
+    "breakthrough", "wins", "awarded", "approved", "acquisition",
+]
+
+BEARISH_SIGNALS = [
+    "miss", "misses", "decline", "loss", "cut", "downgrade", "sell",
+    "underperform", "weak", "fall", "drop", "concern", "warning", "risk",
+    "lawsuit", "investigation", "fraud", "scandal", "layoffs", "recall",
+    "fine", "penalty", "below", "disappoints", "slump", "crash", "bearish",
+    "negative", "headwind", "uncertainty", "regulatory", "antitrust",
+]
 
 
-def _millions(value) -> float | None:
-    """Convert a value to millions, rounded to 2 decimal places."""
-    v = _safe_float(value)
-    return round(v / 1_000_000, 2) if v is not None else None
+def _score_headline(headline: str) -> tuple[str, float]:
+    """
+    Score a single headline as bullish/bearish/neutral.
+    Returns (label, score) where score is 0-1 for bullish, -1 to 0 for bearish.
+    """
+    text = headline.lower()
+    bull_count = sum(1 for word in BULLISH_SIGNALS if word in text)
+    bear_count = sum(1 for word in BEARISH_SIGNALS if word in text)
 
+    total = bull_count + bear_count
+    if total == 0:
+        return "neutral", 0.0
 
-def _extract_row(df: pd.DataFrame, *row_names: str, col) -> float | None:
-    """Try multiple row name variants and return the first match."""
-    for name in row_names:
-        try:
-            if name in df.index:
-                return _millions(df.loc[name, col])
-        except (KeyError, TypeError):
-            continue
-    return None
+    net_score = (bull_count - bear_count) / total
+    if net_score > 0.15:
+        label = "bullish"
+    elif net_score < -0.15:
+        label = "bearish"
+    else:
+        label = "neutral"
+
+    return label, round(net_score, 3)
 ``` 
 
-> Here you see Helper utilities that the Agent will use to do data formatting and extracting data from rows. Similar python logic is written for Tool 1: Income Statement, Tool 2: Balance Sheet, etc. 
+> Here you see the Sentiment Lexicon that the Agent will use to assess articles and determine a basis for bullish or bearish sentiment towards the ticker symbol. Similar python logic is written for Tool 1: Search Recent News, Tool 2: Analyze Sentiment, Schema Validation, etc. Each block of code returns a JSON formatted output that the LLM can evaluate from a cache or from the yFinance source directly. The code ensures that the agent has a consistent set of input to apply inference, as the payload it receives from the tool output is consistently providing the information the prompt needs. 
 
-These `tools` will need to be imported into our `financial_analyst_agent.py` file, which was the Placeholder 1 reference above. Go back to the `fundamentals-analysis-agent/financial_analyst_agent.py` file and insert the following code now that the `fundamentals-analysis-agent/financial_tools.py` file is creaetd. 
+These `tools` will need to be imported into our `news-sentiment-agent.py` file, which was the Placeholder 1 reference above. Go back to the `fundamentals-analysis-agent/news-sentiment-agent.py` file and insert the following code now that the `fundamentals-analysis-agent/news-tools.py` file is creaetd. 
 
 ```python
 # PLACEHOLDER 1 IMPORTS: We will insert more code here to Import tools (see Tool Setup below)
 from agents import Agent
-from tools.financial_tools import (
-    get_income_statement,
-    get_balance_sheet,
-    get_cash_flow_statement,
-    compute_key_ratios,
+from tools.news_tools import (
+    search_recent_news,
+    analyze_sentiment,
 )
 ```
 
@@ -312,25 +338,24 @@ from tools.financial_tools import (
 
 ### Agent Create
 
-Now we can use the OpenAI Agent class to create a new Agent and pass the tools we've just created to the Agent. Go back to the `fundamentals-analysis-agent/financial_analyst_agent.py` file and insert the following code at the *Placeholder 2 Agent Create* location. 
+Now we can use the OpenAI Agent class to create a new Agent and pass the tools we've just created to the Agent. Go back to the `fundamentals-analysis-agent/news-sentiment-agent.py` file and insert the following code at the *Placeholder 2 Agent Create* location. 
 
 ```python
 # ...
 
 # PLACEHOLDER 2 Agent CREATE: We will insert more code here to create the Agent (see Agent Create below)
-financial_data_agent = Agent(
-    name="FinancialDataAgent",
-    instructions=FINANCIAL_DATA_INSTRUCTIONS,
+news_sentiment_agent = Agent(
+    name="NewsAndSentimentAgent",
+    instructions=NEWS_SENTIMENT_INSTRUCTIONS,
     tools=[
-        get_income_statement,
-        get_balance_sheet,
-        get_cash_flow_statement,
-        compute_key_ratios,
+        search_recent_news,
+        analyze_sentiment,
     ],
     model="gpt-4o",
+)
 ```
 
-> Here from the `openai` import, we are able to use the OpenAI class `Agent` and assign it a name `financial_data_agent`. We are also able to pass, at Agent creation, a name, instructions, and tools, and the model instance that we want the Agent to use. Documentation on using the OpenAI spec is [here](https://developers.openai.com/api/docs/guides/agents/quickstart)
+> Here from the `openai` import, we are able to use the OpenAI class `Agent` and assign it a name `NewsAndSentimentAgent`. We are also able to pass, at Agent creation, a name, instructions, and tools, and the model instance that we want the Agent to use. Documentation on using the OpenAI spec is [here](https://developers.openai.com/api/docs/guides/agents/quickstart)
 
 <p align="right"><small><a href="#contents">Back to Top</a></small></p>
 
@@ -339,27 +364,15 @@ financial_data_agent = Agent(
 ### Summary
 
 What we've done:
-1. We've identified we need multiple agents to complete the whole of our analysis. 
-2. We've used our directory structure and a *separation of concerns* software engineering principal to divide our files and our code so we can troubleshoot, scale, and repeat. 
-3. We've setup a repetive process for building multi-agent components 1. Envirnoment Setup 2. Agent Setup & 3. Tooling 
-4. We've created a `main.py` file to initiate any execution of the multiple file system. We can import and run all our files from one source. In this case we tested our API calls.
-5. We have created a `financial_analyst_agent`, which is a specialist agent that has specific instructions and tools to execute its instructions using PCIF prompting method and python code to define the logic of the tools. 
+1. We've used the same pattern to construct the 2nd of 2 agents in our multi-agent solution (MAS). 
+2. While the logic that executes during the tool call is different the same pattern for tool consumption by the Agent has been demonstrated again. 
 
 What this enables: 
-1. Our `fundamentals-analysis` problem set now has 1 of 5 Agents, the `FinancialDataAgent` that can retrieve four types of financial information. It can call tools: 
-+ `get_income_statement`: which will analyze revenue, margins, & earnings
-+ `get_balance_sheet`: which will asssess assets, liablitites, equity, and debt
-+ `get_cash_flow_statement`: which will examine operating cash flow, & free cash flow
-+ `compute_key_ratios`: which will detail profitability, valuation, leverage, and growth indicators
+1. Our `fundamentals-analysis` problem set now has 2 of 5 Agents, the `FinancialDataAgent` that can retrieve four types of financial information, is now augmented with the `NewsAndSentimentAgent`. 
 
-2. The instructions provided enable a defined | expected output format. The final response must be structured into 5 sections, which ensures a consistent analytical report rather than unstructured narrative. 
-+ *revenue & profitablity*
-+ *balance sheet health*
-+ *cash flow quality*
-+ *key ratios snapshot* 
-+ *financial health verdict*
+2. The instructions provided enable the agent to produce a structured sentiment report that captures the current market narrative, an overall sentiment verdict (STRONGLY BULLISH, BULLISH, NEUTRAL, BEARISH, and STRONGLY BEARISH), and key bullish and bearish themes emerging from recent headlines. It also highlights material risk flags, such as regulatory actions, lawsuits, or investigations, that may have a significant impact on the company's outlook. In addition, to ensure transparency and auditability, the agent includes a detailed list of raw news sources, enabling verification of the analysis. 
 
-3. The PCIF technique enables a prompt being passed to the agent that includes strict grounding rules. Every statement must be directly supported by numbers returned by the tools. The agent is explicitly forbidden from adding unsupported qualitative commentary or vague financial language. Each section must remain self-contained, which prevents the agent from mixing balance sheet observations with cash flow analysis for exmaple. If information is missing the agent must state that explicitly instead of silently ignoring it. 
+3. A key design element is the emphasis on signal over noise. The agent is encouraged to prioritize meaningful events, such as regulatory actions or major announcements, rather than overreacting to repetitivve or low-impact headlines.
 
 <p align="right"><small><a href="#contents">Back to Top</a></small></p>
 

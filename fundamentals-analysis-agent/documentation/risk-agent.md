@@ -355,13 +355,16 @@ python3 main.py --ticker ANT
 </p>
 
 *Explanation*
-It follows the same path as the financial data agent from the terminal command, the API-key check, then the agent run. Because python main.py --ticker AAPL prints the financial report first, that step is the self-call on main.py labeled "Financial report printed." After that, run_news_sentiment() starts the news agent.
+The workflow is explicitly structured. It first calls `get_balance_sheet` to assess debt levels, cash reserves, and working capital. It then calls `compute_key_ratios` to evaluate core financial risk indicators such as leverage, liquidity, debt-servicing capacity, and valuation risk. Finally, it calls `search_recent_news` to detect external warning signals, including lawsuits, regulatory investigations, management changes, product recalls, or credit-related events. 
 
-The two tool calls are separate, because they do not do the same work:
+The instructions also impose a strict output structure. The agent must produce a risk register in table format, a financial stress test, a set of key vulernabilities, and a final risk verdict (LOW RISK, MODERATE RISK, ELEVATED RISK, and HIGH RISK). This ensures consistency and makes the ouput directly usable in decision-making. 
 
-`search_recent_news` looks in `cache.py`. On a miss it reads `stock.news` and `stock.info` from yfinance, keeps articles about the company, scores the headlines, and stores the JSON. 
+An important design feature is that the instructions force the agent to remain specific and evidence-based. Generic statements such as "macroeconomic uncertainty" are not sufficient unless they are tied to concrete company-level weaknesses. This keeps the analysis grounded in observable facts rather than broad speculation. 
 
-On a hit it returns the stored JSON. `analyze_sentiment` stays inside `news_tools.py`. It turns that JSON into the aggregate score, themes, and risk flags. It does not call the cache or yfinance.
+We then instantiate the agent by assigning it the name `RiskAgent`, attaching the instruction block, and providing the three tools it is allowed to use: `get_balance_sheet`, `compute_key_ratios`, and `search_recent_news`. We also specify the underlying model, which in this case is gpt-40. 
+
+Notice that the `RiskAgent` shares some tools with the `FinancialDataAgent`, and `NewsAndSentimentAgent`. This is intentional. The `RiskAgent` analyzes the same data from a different perspective, focusing on identifying potential risk signals rather than providing a balanced assessment. The data remains the same, but the interpretation differs. 
+
 
 <p align="right"><small><a href="#contents">Back to Top</a></small></p>
 
@@ -376,7 +379,6 @@ A visual depcition of what is going on looks like this:
 <p align=center >
     <img src="../imgs/risk-agent-sf.png" alt="RiskAgent sequence diagram">
 </p>
-
 
 <p align="right"><small><a href="#contents">Back to Top</a></small></p>
 

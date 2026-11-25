@@ -380,18 +380,18 @@ What this enables:
 
 ### Unit Testing 
 
-Now that we have 1 of 5 agents, lets test to see if it is actually executing calls to its tooling suite and producing a repeatable outcome with our intende objectives. Before we can test the 1. *Environment Setup* 2. The *Agent* & 3. The *Tooling* we need to write some code in the `main.py` file. 
+Now that we have 2 of 5 agents, lets test to see if it is actually executing calls to its tooling suite and producing a repeatable outcome with our intende objectives. Before we can test the 1. *Environment Setup* 2. The *Agent* & 3. The *Tooling* we need to write some code in the `main.py` file. 
 
-Recall right now the only thing in our `main.py` file is a test to see if the OpenAI API key is valid. We need to add a call to the `FinancialDataAgent` and pass in a ticker symbol to an openly traded instrument so the analysis can be completed. 
+Recall the `main.py` file is presently set up to validate our python version, verify our API key, and execute our `FinancialDataAgent`. We need to add a call to the `NewsAndSentimentAgent` and pass the same ticker symbol so the analysis can be completed. 
 
-The `main.py` file needs to add a function to execute the financial analysis in the agent. To do this we need to pass a ticker symbol in a CLI command. Create this function as follows: 
+The `main.py` file needs to add a function to execute the news and sentiment agent. Create this function as follows: 
 
 ```python
-def run_financial_analysis(ticker: str) -> str:
-    """Run FinancialDataAgent for a ticker and return its structured analysis.
+def run_news_sentiment(ticker: str) -> str:
+    """Run NewsAndSentimentAgent for a ticker and return its structured report.
 
-    The agent fetches the income statement, balance sheet, cash flow statement,
-    and key ratios, then writes the summary defined in its instructions.
+    The agent fetches recent headlines, scores sentiment, and writes the
+    report defined in its instructions.
     """
     symbol = ticker.strip().upper()
     if not symbol:
@@ -400,63 +400,30 @@ def run_financial_analysis(ticker: str) -> str:
     from agents import Runner
     from agents.exceptions import AgentsException
 
-    from specialist_agents.financial_analyst_agent import financial_data_agent
+    from specialist_agents.news_sentiment_agent import news_sentiment_agent
 
     load_dotenv()
     result = Runner.run_sync(
-        financial_data_agent,
+        news_sentiment_agent,
         (
-            f"Analyze the financial statements for {symbol}. "
-            "Follow your required tool sequence and return the structured summary."
+            f"Analyze recent news and investor sentiment for {symbol}. "
+            "Follow your required tool sequence and return the structured sentiment report."
         ),
     )
     if not result.final_output:
-        raise AgentsException(f"FinancialDataAgent returned no analysis for {symbol}.")
+        raise AgentsException(f"NewsAndSentimentAgent returned no report for {symbol}.")
     return str(result.final_output)
 ```
 
-We need to refactor the API check into its own function as well. Update the `main.py` file as follows: 
-
-```python
-def check_api_key() -> int:
-    """Verify OPENAI_API_KEY is set and accepted by the OpenAI API.
-
-    Call this before any agent run. Returns 0 when the key is valid, 1 otherwise.
-    """
-    load_dotenv()
-
-    client = OpenAI()
-    key = client.api_key or ""
-
-    if key.strip() in PLACEHOLDER_VALUES:
-        print("OPENAI_API_KEY is missing. Copy .env.example to .env and set a real key.")
-        return 1
-
-    try:
-        page = client.models.list()
-        model_ids = [model.id for model in page.data]
-    except AuthenticationError:
-        print("OPENAI_API_KEY was rejected (401). Check the key on platform.openai.com.")
-        return 1
-    except APIConnectionError as exc:
-        print(f"Could not reach the OpenAI API: {exc}")
-        return 1
-    except APIStatusError as exc:
-        print(f"OpenAI API returned status {exc.status_code}: {exc.message}")
-        return 1
-
-    preview = f"{key[:7]}...{key[-4:]}" if len(key) > 12 else "(set)"
-    print(f"OPENAI_API_KEY is valid ({preview}).")
-    print(f"Account can list {len(model_ids)} models.")
-    return 0
-```
-
-Now we can run the API check, we can invoke the Financial Analysis in the correct order through the `main` function we will also create: 
+We need to refactor the main function that orchestrates the applicatoin. Update the `main.py` file as follows: 
 
 ```python
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Check the OpenAI API key, or run the financial analyst agent for a ticker.",
+        description=(
+            "Check the OpenAI API key, or run the financial and news sentiment "
+            "agents for a ticker."
+        ),
     )
     parser.add_argument(
         "--ticker",
@@ -467,7 +434,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.ticker is not None and sys.version_info < (3, 10):
         current = sys.version.split()[0]
         print(
-            "FinancialDataAgent requires Python 3.10 or newer "
+            "The analysis agents require Python 3.10 or newer "
             f"(this interpreter is {current})."
         )
         print("Recreate the virtual environment with a newer Python:")
@@ -482,26 +449,34 @@ def main(argv: list[str] | None = None) -> int:
 
     from agents.exceptions import AgentsException
 
-    print(f"Running FinancialDataAgent for {args.ticker.strip().upper()}...")
-    try:
-        analysis = run_financial_analysis(args.ticker)
-    except (
+    symbol = args.ticker.strip().upper()
+    agent_errors = (
         ValueError,
         AgentsException,
         AuthenticationError,
         APIConnectionError,
         APIStatusError,
-    ) as exc:
+    )
+    failed = False
+
+    print(f"Running FinancialDataAgent for {symbol}...")
+    try:
+        print(run_financial_analysis(symbol))
+    except agent_errors as exc:
         print(f"Financial analysis failed: {exc}")
-        return 1
+        failed = True
 
-    print(analysis)
-    return 0
+    print(f"Running NewsAndSentimentAgent for {symbol}...")
+    try:
+        print(run_news_sentiment(symbol))
+    except agent_errors as exc:
+        print(f"News and sentiment analysis failed: {exc}")
+        failed = True
 
-
-if __name__ == "__main__":
-    sys.exit(main())
+    return 1 if failed else 0
 ```
+
+
 
 #### Explanation
 > `argparse` accepts one optional flag, --ticker. Omit it and the program only checks the key. Pass a symbol, such as AAPL, and it also runs the analysis. argv defaults to None, so a normal command line is used. Tests can pass a list instead, for example main(["--ticker", "AAPL"]). 
@@ -514,8 +489,8 @@ if __name__ == "__main__":
 > 1. No ticker was passed, so the key check was the whole job. Its status becomes the program’s exit code.
 > 2. A ticker was passed, but the key check failed. The agent is not started.
 
-#### Run the agent
-> With a valid key and a ticker, it imports `AgentsException` and calls `run_financial_analysis`. That function sends the symbol to `FinancialDataAgent` and returns the written analysis. The ticker is printed in uppercase so aapl shows up as AAPL.
+#### Run the agent(s)
+> With a valid key and a ticker, it imports `AgentsException` and calls `run_financial_analysis`. It now also passes the ticker symbol to the `run_news_sentiment` function which initiates the `NewsAndSentiment` agent. The ticker is printed in uppercase so aapl shows up as AAPL.
 
 #### Failure Handling
 > Failures stay as an exit code. These are caught and printed, then the function returns 1:
@@ -530,7 +505,7 @@ python3 main.py --ticker AAPL
 ```
 
 <p align=center >
-    <img height=400 width=400 src="../imgs/appl-ticker.png">
+    <img height=400 width=400 src="../imgs/aapl-ticker-2.png">
 </p>
 
 See if the consistency is valid by entering a new ticker symbol, say Anthropic which is *ANT*: 
@@ -540,24 +515,17 @@ python3 main.py --ticker ANT
 ```
 
 <p align=center >
-    <img height=400 width=400 src="../imgs/ant-ticker.png">
+    <img height=400 width=400 src="../imgs/ant-ticker-2.png">
 </p>
 
 *Explanation*
-> If you are wondering what source of data the Agent is referencing to execute the analysis you need to refer back to the `tools/financial_tools.py` file. We didn't review this explicitly in the processes above, but we added an import to `yfinance` [docs](https://ranaroussi.github.io/yfinance/) which is a third-party library, listed in requirements.txt, that downloads public market data from Yahoo Finance. Nothing in this project implements those downloads; the tools call yfinance and then reshape what it returns.
+It follows the same path as the financial data agent from the terminal command, the API-key check, then the agent run. Because python main.py --ticker AAPL prints the financial report first, that step is the self-call on main.py labeled "Financial report printed." After that, run_news_sentiment() starts the news agent.
 
-> Each of the four tools starts the same way:
-```python
-stock = yf.Ticker(ticker.upper())
-````
+The two tool calls are separate, because they do not do the same work:
 
-> This snippet of code this code base implemnents `Ticker` which is `yfinance` handle for one company. Passing "AAPL" builds an object the tools then read:
-> - `stock.financials` is the annual income statement, used by `get_income_statement`.
-> - `stock.balance_sheet` is the annual balance sheet, used by `get_balance_sheet`.
-> - `stock.cashflow` is the annual cash flow statement, used by `get_cash_flow_statement`.
-> - `stock.info` is a dictionary of summary fields such as P/E, margins, and the company name. compute_key_ratios reads it for the ratios, and the statement tools use it for the company name and reporting currency.
->
-> Those attributes come back as pandas tables or a plain dictionary. The rest of financial_tools.py picks out the rows it needs, converts amounts to millions, and returns JSON for the agent.
+`search_recent_news` looks in `cache.py`. On a miss it reads `stock.news` and `stock.info` from yfinance, keeps articles about the company, scores the headlines, and stores the JSON. 
+
+On a hit it returns the stored JSON. `analyze_sentiment` stays inside `news_tools.py`. It turns that JSON into the aggregate score, themes, and risk flags. It does not call the cache or yfinance.
 
 <p align="right"><small><a href="#contents">Back to Top</a></small></p>
 
@@ -567,10 +535,10 @@ stock = yf.Ticker(ticker.upper())
 
 A visual depcition of what is going on looks like this: 
 
-#### `FinancialDataAgent` Sequence Flow
+#### `NewsAndSentimentAgent` Sequence Flow
 
 <p align=center >
-    <img height=400 width=400 src="../imgs/fin-data-agent-sf.png">
+    <img src="../imgs/news-sentiment-agent-sf.png" alt="NewsAndSentimentAgent sequence diagram">
 </p>
 
 

@@ -1,7 +1,7 @@
 """CLI entry point for the fundamentals analysis pipeline.
 
-With a ticker, this runs FinancialDataAgent and then NewsAndSentimentAgent.
-Without one, it only checks the OpenAI API key.
+With a ticker, this runs FinancialDataAgent, NewsAndSentimentAgent, and
+RiskAgent. Without one, it only checks the OpenAI API key.
 
 Examples:
     python main.py
@@ -112,11 +112,39 @@ def run_news_sentiment(ticker: str) -> str:
     return str(result.final_output)
 
 
+def run_risk_analysis(ticker: str) -> str:
+    """Run RiskAgent for a ticker and return its structured risk report.
+
+    The agent reviews the balance sheet, key ratios, and recent news, then
+    writes the risk register and verdict defined in its instructions.
+    """
+    symbol = ticker.strip().upper()
+    if not symbol:
+        raise ValueError("A ticker symbol is required, for example AAPL.")
+
+    from agents import Runner
+    from agents.exceptions import AgentsException
+
+    from specialist_agents.risk_agent import risk_agent
+
+    load_dotenv()
+    result = Runner.run_sync(
+        risk_agent,
+        (
+            f"Stress-test an investment in {symbol} and identify its material risks. "
+            "Follow your required tool sequence and return the structured risk report."
+        ),
+    )
+    if not result.final_output:
+        raise AgentsException(f"RiskAgent returned no report for {symbol}.")
+    return str(result.final_output)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description=(
-            "Check the OpenAI API key, or run the financial and news sentiment "
-            "agents for a ticker."
+            "Check the OpenAI API key, or run the financial, news sentiment, "
+            "and risk agents for a ticker."
         ),
     )
     parser.add_argument(
@@ -165,6 +193,13 @@ def main(argv: list[str] | None = None) -> int:
         print(run_news_sentiment(symbol))
     except agent_errors as exc:
         print(f"News and sentiment analysis failed: {exc}")
+        failed = True
+
+    print(f"Running RiskAgent for {symbol}...")
+    try:
+        print(run_risk_analysis(symbol))
+    except agent_errors as exc:
+        print(f"Risk analysis failed: {exc}")
         failed = True
 
     return 1 if failed else 0

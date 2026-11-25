@@ -184,6 +184,7 @@ def main(argv: list[str] | None = None) -> int:
     print(f"Running FinancialDataAgent for {symbol}...")
     try:
         print(run_financial_analysis(symbol))
+        print("---------------------------------------------\n")
     except agent_errors as exc:
         print(f"Financial analysis failed: {exc}")
         failed = True
@@ -191,6 +192,7 @@ def main(argv: list[str] | None = None) -> int:
     print(f"Running NewsAndSentimentAgent for {symbol}...")
     try:
         print(run_news_sentiment(symbol))
+        print("---------------------------------------------\n")
     except agent_errors as exc:
         print(f"News and sentiment analysis failed: {exc}")
         failed = True
@@ -198,6 +200,7 @@ def main(argv: list[str] | None = None) -> int:
     print(f"Running RiskAgent for {symbol}...")
     try:
         print(run_risk_analysis(symbol))
+        print("---------------------------------------------\n")
     except agent_errors as exc:
         print(f"Risk analysis failed: {exc}")
         failed = True

@@ -190,10 +190,10 @@ risk_agent = Agent(
 
 What we've done:
 1. We've used the same pattern to construct the 2nd of 2 agents in our multi-agent solution (MAS). 
-2. While the logic that executes during the tool call is different the same pattern for tool consumption by the Agent has been demonstrated again. 
+2. We've demonstrated that tooling can be reused, both accelerating the agent development, and providing a mechanism for Agents to scale independent of Tools. 
 
 What this enables: 
-1. Our `fundamentals-analysis` problem set now has 2 of 5 Agents, the `FinancialDataAgent` that can retrieve four types of financial information, is now augmented with the `NewsAndSentimentAgent`. 
+1. Our `fundamentals-analysis` problem set now has 3 of 5 Agents, the `FinancialDataAgent` that can retrieve four types of financial information, is now augmented with the `NewsAndSentimentAgent`, and now we have an independent agent with a purposely "realistic/pessimistic" view of the information provide that serves as our "Risk Advisor". 
 
 2. The instructions provided enable the agent to produce a structured sentiment report that captures the current market narrative, an overall sentiment verdict (STRONGLY BULLISH, BULLISH, NEUTRAL, BEARISH, and STRONGLY BEARISH), and key bullish and bearish themes emerging from recent headlines. It also highlights material risk flags, such as regulatory actions, lawsuits, or investigations, that may have a significant impact on the company's outlook. In addition, to ensure transparency and auditability, the agent includes a detailed list of raw news sources, enabling verification of the analysis. 
 
@@ -205,18 +205,18 @@ What this enables:
 
 ### Unit Testing 
 
-Now that we have 2 of 5 agents, lets test to see if it is actually executing calls to its tooling suite and producing a repeatable outcome with our intende objectives. Before we can test the 1. *Environment Setup* 2. The *Agent* & 3. The *Tooling* we need to write some code in the `main.py` file. 
+Now that we have 3 of 5 agents, lets test to see if it is actually executing calls to its tooling suite and producing a repeatable outcome with our intended objectives. Before we can test the 1. *Environment Setup* 2. The *Agent* & 3. The *Tooling* we need to write some code in the `main.py` file. 
 
 Recall the `main.py` file is presently set up to validate our python version, verify our API key, and execute our `FinancialDataAgent`. We need to add a call to the `NewsAndSentimentAgent` and pass the same ticker symbol so the analysis can be completed. 
 
-The `main.py` file needs to add a function to execute the news and sentiment agent. Create this function as follows: 
+The `main.py` file needs to add a function to execute the Risk agent. Create this function as follows: 
 
 ```python
-def run_news_sentiment(ticker: str) -> str:
-    """Run NewsAndSentimentAgent for a ticker and return its structured report.
+def run_risk_analysis(ticker: str) -> str:
+    """Run RiskAgent for a ticker and return its structured risk report.
 
-    The agent fetches recent headlines, scores sentiment, and writes the
-    report defined in its instructions.
+    The agent reviews the balance sheet, key ratios, and recent news, then
+    writes the risk register and verdict defined in its instructions.
     """
     symbol = ticker.strip().upper()
     if not symbol:
@@ -225,18 +225,18 @@ def run_news_sentiment(ticker: str) -> str:
     from agents import Runner
     from agents.exceptions import AgentsException
 
-    from specialist_agents.news_sentiment_agent import news_sentiment_agent
+    from specialist_agents.risk_agent import risk_agent
 
     load_dotenv()
     result = Runner.run_sync(
-        news_sentiment_agent,
+        risk_agent,
         (
-            f"Analyze recent news and investor sentiment for {symbol}. "
-            "Follow your required tool sequence and return the structured sentiment report."
+            f"Stress-test an investment in {symbol} and identify its material risks. "
+            "Follow your required tool sequence and return the structured risk report."
         ),
     )
     if not result.final_output:
-        raise AgentsException(f"NewsAndSentimentAgent returned no report for {symbol}.")
+        raise AgentsException(f"RiskAgent returned no report for {symbol}.")
     return str(result.final_output)
 ```
 
@@ -246,8 +246,8 @@ We need to refactor the main function that orchestrates the applicatoin. Update 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description=(
-            "Check the OpenAI API key, or run the financial and news sentiment "
-            "agents for a ticker."
+            "Check the OpenAI API key, or run the financial, news sentiment, "
+            "and risk agents for a ticker."
         ),
     )
     parser.add_argument(
@@ -287,6 +287,7 @@ def main(argv: list[str] | None = None) -> int:
     print(f"Running FinancialDataAgent for {symbol}...")
     try:
         print(run_financial_analysis(symbol))
+        print("---------------------------------------------\n")
     except agent_errors as exc:
         print(f"Financial analysis failed: {exc}")
         failed = True
@@ -294,14 +295,24 @@ def main(argv: list[str] | None = None) -> int:
     print(f"Running NewsAndSentimentAgent for {symbol}...")
     try:
         print(run_news_sentiment(symbol))
+        print("---------------------------------------------\n")
     except agent_errors as exc:
         print(f"News and sentiment analysis failed: {exc}")
         failed = True
 
+    print(f"Running RiskAgent for {symbol}...")
+    try:
+        print(run_risk_analysis(symbol))
+        print("---------------------------------------------\n")
+    except agent_errors as exc:
+        print(f"Risk analysis failed: {exc}")
+        failed = True
+
     return 1 if failed else 0
+
+if __name__ == "__main__":
+    sys.exit(main())
 ```
-
-
 
 #### Explanation
 > `argparse` accepts one optional flag, --ticker. Omit it and the program only checks the key. Pass a symbol, such as AAPL, and it also runs the analysis. argv defaults to None, so a normal command line is used. Tests can pass a list instead, for example main(["--ticker", "AAPL"]). 
@@ -330,7 +341,7 @@ python3 main.py --ticker AAPL
 ```
 
 <p align=center >
-    <img height=400 width=400 src="../imgs/aapl-ticker-2.png">
+    <img height=400 width=400 src="../imgs/aapl-ticker-3.png">
 </p>
 
 See if the consistency is valid by entering a new ticker symbol, say Anthropic which is *ANT*: 
@@ -340,7 +351,7 @@ python3 main.py --ticker ANT
 ```
 
 <p align=center >
-    <img height=400 width=400 src="../imgs/ant-ticker-2.png">
+    <img height=400 width=400 src="../imgs/ant-ticker-3.png">
 </p>
 
 *Explanation*
@@ -360,10 +371,10 @@ On a hit it returns the stored JSON. `analyze_sentiment` stays inside `news_tool
 
 A visual depcition of what is going on looks like this: 
 
-#### `NewsAndSentimentAgent` Sequence Flow
+#### `RiskAgent` Sequence Flow
 
 <p align=center >
-    <img src="../imgs/news-sentiment-agent-sf.png" alt="NewsAndSentimentAgent sequence diagram">
+    <img src="../imgs/risk-agent-sf.png" alt="RiskAgent sequence diagram">
 </p>
 
 

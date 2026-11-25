@@ -517,7 +517,7 @@ python3 main.py --ticker AAPL
 ```
 
 <p align=center >
-    <img height=400 width=400 src="./imgs/appl-ticker.png">
+    <img height=400 width=400 src="../imgs/appl-ticker.png">
 </p>
 
 See if the consistency is valid by entering a new ticker symbol, say Anthropic which is *ANT*: 
@@ -527,7 +527,7 @@ python3 main.py --ticker ANT
 ```
 
 <p align=center >
-    <img height=400 width=400 src="./imgs/ant-ticker.png">
+    <img height=400 width=400 src="../imgs/ant-ticker.png">
 </p>
 
 *Explanation*
@@ -557,12 +557,10 @@ A visual depcition of what is going on looks like this:
 #### `FinancialDataAgent` Sequence Flow
 
 <p align=center >
-    <img height=400 width=400 src="./imgs/fin-data-agent-sf.png">
+    <img height=400 width=400 src="../imgs/fin-data-agent-sf.png">
 </p>
 
 
 <p align="right"><small><a href="#contents">Back to Top</a></small></p>
 
------------
-
-#
+----------

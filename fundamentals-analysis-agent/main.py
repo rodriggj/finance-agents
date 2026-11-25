@@ -1,5 +1,8 @@
 """CLI entry point for the fundamentals analysis pipeline.
 
+With a ticker, this runs FinancialDataAgent and then NewsAndSentimentAgent.
+Without one, it only checks the OpenAI API key.
+
 Examples:
     python main.py
     python main.py --ticker AAPL
@@ -81,9 +84,40 @@ def run_financial_analysis(ticker: str) -> str:
     return str(result.final_output)
 
 
+def run_news_sentiment(ticker: str) -> str:
+    """Run NewsAndSentimentAgent for a ticker and return its structured report.
+
+    The agent fetches recent headlines, scores sentiment, and writes the
+    report defined in its instructions.
+    """
+    symbol = ticker.strip().upper()
+    if not symbol:
+        raise ValueError("A ticker symbol is required, for example AAPL.")
+
+    from agents import Runner
+    from agents.exceptions import AgentsException
+
+    from specialist_agents.news_sentiment_agent import news_sentiment_agent
+
+    load_dotenv()
+    result = Runner.run_sync(
+        news_sentiment_agent,
+        (
+            f"Analyze recent news and investor sentiment for {symbol}. "
+            "Follow your required tool sequence and return the structured sentiment report."
+        ),
+    )
+    if not result.final_output:
+        raise AgentsException(f"NewsAndSentimentAgent returned no report for {symbol}.")
+    return str(result.final_output)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Check the OpenAI API key, or run the financial analyst agent for a ticker.",
+        description=(
+            "Check the OpenAI API key, or run the financial and news sentiment "
+            "agents for a ticker."
+        ),
     )
     parser.add_argument(
         "--ticker",
@@ -94,7 +128,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.ticker is not None and sys.version_info < (3, 10):
         current = sys.version.split()[0]
         print(
-            "FinancialDataAgent requires Python 3.10 or newer "
+            "The analysis agents require Python 3.10 or newer "
             f"(this interpreter is {current})."
         )
         print("Recreate the virtual environment with a newer Python:")
@@ -109,21 +143,31 @@ def main(argv: list[str] | None = None) -> int:
 
     from agents.exceptions import AgentsException
 
-    print(f"Running FinancialDataAgent for {args.ticker.strip().upper()}...")
-    try:
-        analysis = run_financial_analysis(args.ticker)
-    except (
+    symbol = args.ticker.strip().upper()
+    agent_errors = (
         ValueError,
         AgentsException,
         AuthenticationError,
         APIConnectionError,
         APIStatusError,
-    ) as exc:
-        print(f"Financial analysis failed: {exc}")
-        return 1
+    )
+    failed = False
 
-    print(analysis)
-    return 0
+    print(f"Running FinancialDataAgent for {symbol}...")
+    try:
+        print(run_financial_analysis(symbol))
+    except agent_errors as exc:
+        print(f"Financial analysis failed: {exc}")
+        failed = True
+
+    print(f"Running NewsAndSentimentAgent for {symbol}...")
+    try:
+        print(run_news_sentiment(symbol))
+    except agent_errors as exc:
+        print(f"News and sentiment analysis failed: {exc}")
+        failed = True
+
+    return 1 if failed else 0
 
 
 if __name__ == "__main__":
